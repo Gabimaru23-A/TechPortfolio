@@ -4,36 +4,36 @@ Proyecto individual de **Interfaces en React 711-2026**, creado con React y Vite
 
 ## Ejecutar en CodeSandbox
 
-1. Importar el repositorio de GitHub (o subir el contenido de este ZIP como proyecto).
-2. Ejecutar `npm install` cuando sea necesario.
+1. Importar el repositorio de GitHub y trabajar en la carpeta `TechPortfolio-CodeSandbox`.
+2. Ejecutar `npm install` para instalar las dependencias.
 3. Ejecutar `npm run dev` y abrir la vista previa del servidor Vite.
 4. También se puede verificar con `npm run build`.
 
 ## Cinco vistas
 
-- `/#/` — Inicio, banner, perfil, tres aspectos de biografía, dos CTA y enlaces sociales.
-- `/#/proyectos` — 12 fichas de demostración, 10 por página, filtros por categoría (selector) y tecnología (texto), sidebar de ocho atributos.
-- `/#/tecnologias` — tres tecnologías con imagen, estudios, dos espacios de IA y timeline de tres experiencias.
-- `/#/contacto` — formulario con validación, cinco testimonios ilustrativos y mensaje de agradecimiento.
-- `/#/propuesta` — dos secciones de propuesta de valor y footer.
+- `/#/` — Inicio y biografía con perfil académico, intereses y enlaces a Proyectos y Contacto.
+- `/#/proyectos` — 12 propuestas académicas, 10 por página, filtros combinables por categoría y tecnología, y panel lateral con ocho atributos.
+- `/#/tecnologias` — tres tecnologías, estudios, dos herramientas de IA y tres espacios para registrar experiencia.
+- `/#/contacto` — formulario validado para preparar un borrador de correo y cinco testimonios ilustrativos.
+- `/#/propuesta` — servicios que puedo aportar y método de trabajo.
 
 ## Implementación React y JavaScript
 
-- Componentes y Props: `ProjectCard`, `PageHeading`, `Layout`, páginas y otros componentes reutilizables.
-- `useState`: menú, formulario, filtros, paginación y proyecto seleccionado.
-- `useEffect`: carga asíncrona con `fetch`, cierre del sidebar con Escape y navegación.
-- `useContext`: selección de proyecto y apertura/cierre del sidebar.
-- Arreglos/objetos, eventos y Promesas: `filter`, `map`, `slice`, `Set`, `onClick`, `onChange`, `onSubmit` y `fetch` con `.then`.
+- Las vistas están en `src/pages/` y comparten componentes mediante Props, entre ellos `PageHeading`, `FeatureCard` y `ProjectCard`.
+- `useState` controla el menú, el formulario, los filtros, la página y el proyecto seleccionado.
+- `useEffect` carga el catálogo con `fetch`, sincroniza el diálogo lateral y actualiza el foco al navegar.
+- `useContext` comparte la selección entre las tarjetas y el panel lateral.
+- La carga encadena Promesas con `.then` y `.catch`, y usa `AbortController` para cancelar la solicitud al salir de la vista.
 
-El catálogo está en `public/data/proyectos.json`, con 12 registros. Las tarjetas muestran los 5 atributos **nombre, categoría, tecnología, estado, fecha**; el sidebar presenta esos cinco y también **descripción, imagen, enlace**. El `id` es una clave técnica adicional, no uno de los ocho atributos de negocio.
+El catálogo está en `public/data/proyectos.json`. Las tarjetas muestran **nombre, categoría, tecnología, estado y fecha**. El panel lateral añade **descripción, imagen y enlace**. El campo `id` identifica cada registro internamente. El panel se puede cerrar con su botón, con Escape o con un clic en el fondo cuando queda visible.
 
-## Importante: personalización responsable
+## Datos del perfil y fichas
 
-**Los proyectos son conceptos de demostración, no aplicaciones que se afirme haber desarrollado.** Los testimonios son **ejemplos de maquetación**, no opiniones verificadas. Las tres experiencias laborales están **sin completar**; deben reemplazarse por experiencias reales o consultarse al profesor si se aceptan experiencias académicas. La segunda herramienta de IA está pendiente de indicar con evidencia de uso.
+El catálogo presenta propuestas académicas y los testimonios son ejemplos de maquetación. Las experiencias laborales quedan pendientes de registrar con datos reales. La foto de Inicio es una imagen ilustrativa generada para el portafolio.
 
-En `src/App.jsx` cambia `PERFIL.nombre`, `PERFIL.linkedin` y `PERFIL.email`, y confirma tus datos académicos. Sustituye las propuestas del JSON por trabajos tuyos cuando tengas evidencias.
+Los datos personales y enlaces se editan en `src/perfil.js`. Agrega `email` para precargar el destinatario del borrador y `linkedin` para mostrar ese enlace en el sitio.
 
-El formulario valida nombre/apellidos (solo letras, máximo 20 caracteres), correo, teléfono (solo números) y descripción obligatoria. Usa `mailto:` para preparar el correo en el cliente del visitante: **no envía mensajes automáticamente**. Debes configurar el destinatario y confirmar el envío desde la aplicación de correo.
+El formulario valida nombre y apellidos, correo, teléfono y descripción. El enlace `mailto:` abre el borrador en la aplicación de correo del visitante, donde se puede completar el destinatario y enviar el mensaje.
 
 ## Entregables
 
