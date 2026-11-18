@@ -6,7 +6,7 @@
     "tecnologia": "React",
     "estado": "Propuesta",
     "fecha": "2026-11-01",
-    "descripcion": "Concepto académico de inventario ti, pendiente de documentar o desarrollar como proyecto real.",
+    "descripcion": "Propuesta para registrar equipos TI y consultar su ubicación, asignación y estado. La vista de inventario ayudaría a identificar qué equipos están disponibles o requieren mantenimiento.",
     "imagen": "/placeholder.svg",
     "enlace": null
   },
@@ -17,7 +17,7 @@
     "tecnologia": "JavaScript",
     "estado": "Propuesta",
     "fecha": "2026-11-02",
-    "descripcion": "Concepto académico de gestión de usuarios, pendiente de documentar o desarrollar como proyecto real.",
+    "descripcion": "Propuesta de una interfaz para organizar registros de usuarios en un directorio interno. El listado incluiría búsqueda por nombre y filtros por área y estado del registro.",
     "imagen": "/placeholder.svg",
     "enlace": null
   },
@@ -28,7 +28,7 @@
     "tecnologia": "React",
     "estado": "Propuesta",
     "fecha": "2026-11-03",
-    "descripcion": "Concepto académico de mesa de ayuda, pendiente de documentar o desarrollar como proyecto real.",
+    "descripcion": "Propuesta de una mesa de ayuda para registrar solicitudes de soporte y priorizarlas. Cada ficha reuniría el problema, la persona asignada y el avance de la atención.",
     "imagen": "/placeholder.svg",
     "enlace": null
   },
@@ -39,7 +39,7 @@
     "tecnologia": "HTML y CSS",
     "estado": "Propuesta",
     "fecha": "2026-11-04",
-    "descripcion": "Concepto académico de sitio corporativo, pendiente de documentar o desarrollar como proyecto real.",
+    "descripcion": "Propuesta de sitio informativo para una organización de servicios. Incluye una estructura para presentar la empresa, explicar sus servicios e indicar los canales de contacto.",
     "imagen": "/placeholder.svg",
     "enlace": null
   },
@@ -50,7 +50,7 @@
     "tecnologia": "JavaScript",
     "estado": "Propuesta",
     "fecha": "2026-11-05",
-    "descripcion": "Concepto académico de registro de incidencias, pendiente de documentar o desarrollar como proyecto real.",
+    "descripcion": "Propuesta para documentar fallas en equipos o aplicaciones. El registro conservaría la fecha, el alcance, las acciones realizadas y el resultado de cada intervención.",
     "imagen": "/placeholder.svg",
     "enlace": null
   },
@@ -61,7 +61,7 @@
     "tecnologia": "React",
     "estado": "Propuesta",
     "fecha": "2026-11-06",
-    "descripcion": "Concepto académico de panel de indicadores, pendiente de documentar o desarrollar como proyecto real.",
+    "descripcion": "Propuesta de un panel para consultar solicitudes de soporte abiertas y resueltas. La vista resumiría el volumen de casos y los tiempos de atención por periodo.",
     "imagen": "/placeholder.svg",
     "enlace": null
   },
@@ -72,7 +72,7 @@
     "tecnologia": "JavaScript",
     "estado": "Propuesta",
     "fecha": "2026-11-07",
-    "descripcion": "Concepto académico de documentación qa, pendiente de documentar o desarrollar como proyecto real.",
+    "descripcion": "Propuesta de un espacio para documentar casos de prueba. Cada caso incluiría pasos, condiciones iniciales, resultado esperado, resultado observado y evidencias.",
     "imagen": "/placeholder.svg",
     "enlace": null
   },
@@ -83,7 +83,7 @@
     "tecnologia": "HTML y CSS",
     "estado": "Propuesta",
     "fecha": "2026-11-08",
-    "descripcion": "Concepto académico de registro de mantenimiento, pendiente de documentar o desarrollar como proyecto real.",
+    "descripcion": "Propuesta para organizar el historial de mantenimiento preventivo y correctivo de equipos. La ficha mostraría qué se revisó y cuándo corresponde la próxima intervención.",
     "imagen": "/placeholder.svg",
     "enlace": null
   },
@@ -94,7 +94,7 @@
     "tecnologia": "React",
     "estado": "Propuesta",
     "fecha": "2026-11-09",
-    "descripcion": "Concepto académico de control de préstamos, pendiente de documentar o desarrollar como proyecto real.",
+    "descripcion": "Propuesta para consultar qué recursos están disponibles, a quién se prestaron y cuándo deben devolverse. Está pensada para espacios como laboratorios académicos.",
     "imagen": "/placeholder.svg",
     "enlace": null
   },
@@ -105,7 +105,7 @@
     "tecnologia": "JavaScript",
     "estado": "Propuesta",
     "fecha": "2026-11-10",
-    "descripcion": "Concepto académico de checklist de pruebas, pendiente de documentar o desarrollar como proyecto real.",
+    "descripcion": "Propuesta de lista para revisar una interfaz antes de publicarla. Incluye verificaciones de navegación, formularios, lectura en pantallas pequeñas y uso mediante teclado.",
     "imagen": "/placeholder.svg",
     "enlace": null
   },
@@ -116,7 +116,7 @@
     "tecnologia": "React",
     "estado": "Propuesta",
     "fecha": "2026-11-11",
-    "descripcion": "Concepto académico de catálogo de productos, pendiente de documentar o desarrollar como proyecto real.",
+    "descripcion": "Propuesta de catálogo para consultar productos por categoría y disponibilidad. Las fichas presentarían imágenes y datos básicos para facilitar la comparación.",
     "imagen": "/placeholder.svg",
     "enlace": null
   },
@@ -127,7 +127,7 @@
     "tecnologia": "JavaScript",
     "estado": "Propuesta",
     "fecha": "2026-11-12",
-    "descripcion": "Concepto académico de dispositivos de red, pendiente de documentar o desarrollar como proyecto real.",
+    "descripcion": "Propuesta para documentar dispositivos de una red local. El inventario reuniría el tipo de equipo, la ubicación y las observaciones de configuración o mantenimiento.",
     "imagen": "/placeholder.svg",
     "enlace": null
   }
