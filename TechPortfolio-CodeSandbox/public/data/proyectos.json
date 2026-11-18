@@ -1,0 +1,134 @@
+[
+  {
+    "id": "TP-001",
+    "nombre": "Inventario TI",
+    "categoria": "Desarrollo web",
+    "tecnologia": "React",
+    "estado": "Propuesta",
+    "fecha": "2026-11-01",
+    "descripcion": "Concepto académico de inventario ti, pendiente de documentar o desarrollar como proyecto real.",
+    "imagen": "/placeholder.svg",
+    "enlace": null
+  },
+  {
+    "id": "TP-002",
+    "nombre": "Gestión de usuarios",
+    "categoria": "Desarrollo web",
+    "tecnologia": "JavaScript",
+    "estado": "Propuesta",
+    "fecha": "2026-11-02",
+    "descripcion": "Concepto académico de gestión de usuarios, pendiente de documentar o desarrollar como proyecto real.",
+    "imagen": "/placeholder.svg",
+    "enlace": null
+  },
+  {
+    "id": "TP-003",
+    "nombre": "Mesa de ayuda",
+    "categoria": "Soporte TI",
+    "tecnologia": "React",
+    "estado": "Propuesta",
+    "fecha": "2026-11-03",
+    "descripcion": "Concepto académico de mesa de ayuda, pendiente de documentar o desarrollar como proyecto real.",
+    "imagen": "/placeholder.svg",
+    "enlace": null
+  },
+  {
+    "id": "TP-004",
+    "nombre": "Sitio corporativo",
+    "categoria": "Desarrollo web",
+    "tecnologia": "HTML y CSS",
+    "estado": "Propuesta",
+    "fecha": "2026-11-04",
+    "descripcion": "Concepto académico de sitio corporativo, pendiente de documentar o desarrollar como proyecto real.",
+    "imagen": "/placeholder.svg",
+    "enlace": null
+  },
+  {
+    "id": "TP-005",
+    "nombre": "Registro de incidencias",
+    "categoria": "Soporte TI",
+    "tecnologia": "JavaScript",
+    "estado": "Propuesta",
+    "fecha": "2026-11-05",
+    "descripcion": "Concepto académico de registro de incidencias, pendiente de documentar o desarrollar como proyecto real.",
+    "imagen": "/placeholder.svg",
+    "enlace": null
+  },
+  {
+    "id": "TP-006",
+    "nombre": "Panel de indicadores",
+    "categoria": "Desarrollo web",
+    "tecnologia": "React",
+    "estado": "Propuesta",
+    "fecha": "2026-11-06",
+    "descripcion": "Concepto académico de panel de indicadores, pendiente de documentar o desarrollar como proyecto real.",
+    "imagen": "/placeholder.svg",
+    "enlace": null
+  },
+  {
+    "id": "TP-007",
+    "nombre": "Documentación QA",
+    "categoria": "Calidad de software",
+    "tecnologia": "JavaScript",
+    "estado": "Propuesta",
+    "fecha": "2026-11-07",
+    "descripcion": "Concepto académico de documentación qa, pendiente de documentar o desarrollar como proyecto real.",
+    "imagen": "/placeholder.svg",
+    "enlace": null
+  },
+  {
+    "id": "TP-008",
+    "nombre": "Registro de mantenimiento",
+    "categoria": "Soporte TI",
+    "tecnologia": "HTML y CSS",
+    "estado": "Propuesta",
+    "fecha": "2026-11-08",
+    "descripcion": "Concepto académico de registro de mantenimiento, pendiente de documentar o desarrollar como proyecto real.",
+    "imagen": "/placeholder.svg",
+    "enlace": null
+  },
+  {
+    "id": "TP-009",
+    "nombre": "Control de préstamos",
+    "categoria": "Desarrollo web",
+    "tecnologia": "React",
+    "estado": "Propuesta",
+    "fecha": "2026-11-09",
+    "descripcion": "Concepto académico de control de préstamos, pendiente de documentar o desarrollar como proyecto real.",
+    "imagen": "/placeholder.svg",
+    "enlace": null
+  },
+  {
+    "id": "TP-010",
+    "nombre": "Checklist de pruebas",
+    "categoria": "Calidad de software",
+    "tecnologia": "JavaScript",
+    "estado": "Propuesta",
+    "fecha": "2026-11-10",
+    "descripcion": "Concepto académico de checklist de pruebas, pendiente de documentar o desarrollar como proyecto real.",
+    "imagen": "/placeholder.svg",
+    "enlace": null
+  },
+  {
+    "id": "TP-011",
+    "nombre": "Catálogo de productos",
+    "categoria": "Desarrollo web",
+    "tecnologia": "React",
+    "estado": "Propuesta",
+    "fecha": "2026-11-11",
+    "descripcion": "Concepto académico de catálogo de productos, pendiente de documentar o desarrollar como proyecto real.",
+    "imagen": "/placeholder.svg",
+    "enlace": null
+  },
+  {
+    "id": "TP-012",
+    "nombre": "Dispositivos de red",
+    "categoria": "Redes",
+    "tecnologia": "JavaScript",
+    "estado": "Propuesta",
+    "fecha": "2026-11-12",
+    "descripcion": "Concepto académico de dispositivos de red, pendiente de documentar o desarrollar como proyecto real.",
+    "imagen": "/placeholder.svg",
+    "enlace": null
+  }
+]
