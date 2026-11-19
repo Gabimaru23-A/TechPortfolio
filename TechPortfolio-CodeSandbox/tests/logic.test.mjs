@@ -36,8 +36,18 @@ test('el limpiador admite letras con tildes y rechaza caracteres y números', ()
   assert.equal(limpiarValorContacto('apellidos','A'.repeat(27)).length,20);
 });
 
-test('formulario válido no tiene errores', () => {
-  assert.deepEqual(validarContacto({nombre:'Ana',apellidos:'María López',correo:'ana@example.com',telefono:'3105551234',descripcion:'Necesito una interfaz web.'}),{});
+test('formulario válido no tiene errores con dominios permitidos', () => {
+  assert.deepEqual(validarContacto({nombre:'Ana',apellidos:'María López',correo:'ana@gmail.com',telefono:'3105551234',descripcion:'Necesito una interfaz web.'}),{});
+});
+
+test('formulario rechaza dominios de correo no permitidos', () => {
+  const errores = validarContacto({nombre:'Ana',apellidos:'María López',correo:'ana@example.com',telefono:'3105551234',descripcion:'Necesito una interfaz web.'});
+  assert.equal(errores.correo, 'Usa un correo @gmail.com o @hotmail.com.');
+});
+
+test('formulario exige una descripción de al menos 20 caracteres', () => {
+  const errores = validarContacto({nombre:'Ana',apellidos:'María López',correo:'ana@gmail.com',telefono:'3105551234',descripcion:'Texto corto'});
+  assert.equal(errores.descripcion, 'La descripción debe tener al menos 20 caracteres.');
 });
 
 test('formulario inválido informa los cinco campos', () => {

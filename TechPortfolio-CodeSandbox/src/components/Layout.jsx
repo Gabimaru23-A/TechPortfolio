@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { NavLink, Link, useLocation } from 'react-router-dom';
-import { Code2, Github, Linkedin, Menu, X } from 'lucide-react';
+import { Github, Linkedin, Menu, X } from 'lucide-react';
 import { perfil } from '../data/site.js';
 
 const rutas = [
@@ -38,7 +38,7 @@ export default function Layout({ children }) {
       <header className="header">
         <div className="container topbar">
           <Link className="brand" to="/" aria-label="TechPortfolio, ir al inicio">
-            <span className="brand-icon"><Code2 size={24}/></span>
+            <img className="brand-icon" src={`${import.meta.env.BASE_URL}favicon.svg`} alt="" width="44" height="44"/>
             <span>Tech<b>Portfolio</b><small>SOLUCIONES TI</small></span>
           </Link>
           <button type="button" className="menu-button" aria-label={menuAbierto ? 'Cerrar menú' : 'Abrir menú'} aria-expanded={menuAbierto} aria-controls="navegacion" onClick={() => setMenuAbierto(v => !v)}>
@@ -52,7 +52,7 @@ export default function Layout({ children }) {
       <main id="contenido-principal" ref={principal}>{children}</main>
       <footer className="footer">
         <div className="container footer-grid">
-          <div><h3>TechPortfolio</h3><p>Soluciones TI · React, JavaScript y diseño centrado en las personas.</p></div>
+          <div className="footer-brand"><img src={`${import.meta.env.BASE_URL}favicon.svg`} alt="" width="36" height="36"/><div><h3>TechPortfolio</h3><p>Soluciones TI · React, JavaScript y diseño centrado en las personas.</p></div></div>
           <SocialLinks />
         </div>
         <div className="container footer-bottom">© {new Date().getFullYear()} TechPortfolio · Proyecto académico individual · Algunos contenidos son ficticios y se identifican como tales.</div>

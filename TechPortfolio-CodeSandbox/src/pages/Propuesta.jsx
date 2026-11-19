@@ -1,4 +1,4 @@
-import { ArrowRight, CheckCircle2, Code2, Layers, Monitor, ShieldCheck } from 'lucide-react';
+import { ArrowRight, CheckCircle2, Layers, Monitor, ShieldCheck } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import PageHeading from '../components/PageHeading.jsx';
 
@@ -20,7 +20,7 @@ export default function Propuesta() {
         Soluciones digitales útiles, con enfoque en usabilidad, organización y evolución tecnológica.
       </PageHeading>
       <section className="value-hero" aria-labelledby="soluciones-titulo">
-        <div className="value-art"><Code2 size={76}/><small>TECH · SOLUTIONS</small></div>
+        <div className="value-art"><img className="value-logo" src={`${import.meta.env.BASE_URL}favicon.svg`} alt="Isotipo TP de TechPortfolio"/><small>TECHPORTFOLIO · SOLUCIONES TI</small></div>
         <div><span className="eyebrow">SECCIÓN 01</span><h2 id="soluciones-titulo">Soluciones tecnológicas con propósito</h2>
           <p>Desarrollo de herramientas e interfaces para presentar información, simplificar procesos y facilitar tareas habituales.</p>
           {aportes.map(aporte => <div key={aporte} className="tick"><CheckCircle2 size={18}/>{aporte}</div>)}

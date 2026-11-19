@@ -17,7 +17,7 @@ export default function ProjectFilters({ categorias, alAplicar }) {
 
   return (
     <form className="filters card" onSubmit={filtrar}>
-      <div className="filter-title"><Filter size={18}/><strong>Explorar proyectos</strong><span>Filtra por categoría y tecnología</span></div>
+      <div className="filter-title"><span className="filter-icon"><Filter size={18}/></span><div><strong>Encuentra una solución</strong><span>Combina los filtros para acotar el catálogo.</span></div></div>
       <div className="filter-controls">
         <label>Categoría
           <select value={categoria} onChange={event => setCategoria(event.target.value)}>

@@ -27,6 +27,12 @@ export default function Contacto() {
       setMensaje('Revisa los campos señalados para continuar.');
       return;
     }
+    const emailDestino = import.meta.env.VITE_CONTACT_EMAIL || perfil.email;
+    if (!emailDestino) {
+      setEnlaceCorreo('');
+      setMensaje('El correo de destino aún no está configurado. Define VITE_CONTACT_EMAIL en el archivo .env.local y vuelve a intentarlo.');
+      return;
+    }
     const nombreCompleto = `${formulario.nombre.trim()} ${formulario.apellidos.trim()}`;
     const asunto = encodeURIComponent(`Contacto TechPortfolio - ${nombreCompleto}`);
     const texto = encodeURIComponent([
@@ -36,7 +42,7 @@ export default function Contacto() {
       '',
       `Descripción del proyecto:`, formulario.descripcion.trim()
     ].join('\n'));
-    const enlace = `mailto:${perfil.email}?subject=${asunto}&body=${texto}`;
+    const enlace = `mailto:${emailDestino}?subject=${asunto}&body=${texto}`;
     setEnlaceCorreo(enlace);
     // Abre la app de correo; el envío real lo confirma el visitante.
     window.location.href = enlace;
@@ -67,7 +73,7 @@ export default function Contacto() {
             <label>Correo electrónico *<input type="email" name="correo" value={formulario.correo} onChange={cambiar} autoComplete="email" aria-invalid={Boolean(errores.correo)}/>{errores.correo && <small className="error">{errores.correo}</small>}</label>
             <label>Teléfono *<input type="tel" name="telefono" inputMode="numeric" maxLength={15} value={formulario.telefono} onChange={cambiar} autoComplete="tel" aria-invalid={Boolean(errores.telefono)}/>{errores.telefono && <small className="error">{errores.telefono}</small>}</label>
           </div>
-          <label>Descripción del proyecto *<textarea name="descripcion" rows={6} value={formulario.descripcion} onChange={cambiar} aria-invalid={Boolean(errores.descripcion)}/>{errores.descripcion && <small className="error">{errores.descripcion}</small>}</label>
+          <label>Descripción del proyecto *<textarea name="descripcion" rows={6} minLength={20} value={formulario.descripcion} onChange={cambiar} aria-invalid={Boolean(errores.descripcion)}/>{errores.descripcion && <small className="error">{errores.descripcion}</small>}</label>
           <button type="submit" className="btn blue">Enviar email <ArrowRight size={17}/></button>
           {mensaje && <div role="status" className={enlaceCorreo ? 'success' : 'form-warning'}>
             {enlaceCorreo && <CheckCircle2 size={18}/>} {mensaje}

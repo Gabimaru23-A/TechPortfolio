@@ -33,11 +33,11 @@ export default function ProjectSidebar() {
     <dialog ref={modal} className="project-sidebar" aria-labelledby="titulo-proyecto" onClose={cerrar} onClick={event => { if (event.target === event.currentTarget) event.currentTarget.close(); }}>
       <div className="sidebar-content">
         <div className="sidebar-heading">
-          <span className="eyebrow">DETALLE DEL PROYECTO</span>
-          <button type="button" ref={cerrarRef} className="icon-button" aria-label="Cerrar detalle" onClick={() => modal.current?.close()}><X size={22}/></button>
+          <div><span className="eyebrow">FICHA DEL PROYECTO</span><p className="sidebar-kicker">Información clave y alcance</p></div>
+          <button type="button" ref={cerrarRef} className="icon-button" aria-label="Cerrar detalle" onClick={() => modal.current?.close()}><X size={22}/><span className="sr-only">Cerrar</span></button>
         </div>
         <img className="drawer-image" src={imagen} alt={`Ilustración de ${proyecto.nombre}`}/>
-        <h2 id="titulo-proyecto">{proyecto.nombre}</h2>
+        <div className="sidebar-title-row"><div><span className="chip">{proyecto.categoria}</span><h2 id="titulo-proyecto">{proyecto.nombre}</h2></div><span className="status-pill">{proyecto.estado}</span></div>
         <dl className="project-attributes">
           {filas.map(([clave, valor]) => <div key={clave}><dt>{clave}</dt><dd>{valor}</dd></div>)}
           <div><dt>Imagen</dt><dd>Ilustración del proyecto, visible en la parte superior.</dd></div>

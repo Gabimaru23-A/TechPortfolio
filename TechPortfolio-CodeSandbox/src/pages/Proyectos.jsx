@@ -43,7 +43,7 @@ export default function Proyectos() {
 
   return (
     <section className="container section page">
-      <PageHeading label="PORTAFOLIO / PROYECTOS" title="Proyectos y" emphasis="soluciones">
+      <PageHeading label="PORTAFOLIO / PROYECTOS" title="Soluciones que" emphasis="resuelven">
         Catálogo de soluciones TI con filtros combinables, paginación y detalles técnicos de cada proyecto.
       </PageHeading>
       <ProjectFilters categorias={categorias} alAplicar={aplicar}/>

@@ -1,7 +1,3 @@
-# TechPortfolio — Entrega para VS Code / GitHub
+# TechPortfolio
 
-El proyecto React está completamente contenido en `TechPortfolio-CodeSandbox/`.
-
-Abre esa carpeta en VS Code (o desde la terminal ejecuta `cd TechPortfolio-CodeSandbox`). Después usa `npm install`, `npm run dev`, `npm test` y `npm run build`.
-
-Consulta `TechPortfolio-CodeSandbox/README.md` para todos los módulos y requisitos.
+La única aplicación del repositorio está en [TechPortfolio-CodeSandbox](./TechPortfolio-CodeSandbox/). Su [README](./TechPortfolio-CodeSandbox/README.md) contiene la instalación, ejecución y estructura.

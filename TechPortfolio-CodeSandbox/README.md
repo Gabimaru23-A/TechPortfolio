@@ -33,7 +33,6 @@ Si partes del repositorio, la aplicación está en la carpeta `TechPortfolio-Cod
 - `public/data/proyectos.json`: catálogo de 12 registros con ocho atributos comerciales (más ID interno).
 - `src/utils/logic.js`: lógica comprobable de filtros, paginación y validaciones.
 - `tests/logic.test.mjs`: pruebas con Node.js.
-- `docs/`: matriz de requisitos y guion de sustentación.
 
 ## Requisitos React y JavaScript
 
