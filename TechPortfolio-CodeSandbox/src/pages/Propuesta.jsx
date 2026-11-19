@@ -1,45 +1,40 @@
-import { ListChecks, PanelsTopLeft, Wrench } from 'lucide-react';
+import { ArrowRight, CheckCircle2, Code2, Layers, Monitor, ShieldCheck } from 'lucide-react';
 import { Link } from 'react-router-dom';
-import FeatureCard from '../components/FeatureCard.jsx';
 import PageHeading from '../components/PageHeading.jsx';
 
-const aportes = [
-  { icon: PanelsTopLeft, title: 'Interfaces web', text: 'Organizo el contenido y los controles para que cada persona encuentre lo que necesita desde el celular o el computador.' },
-  { icon: ListChecks, title: 'Información estructurada', text: 'Defino los datos que necesita cada proceso para que se puedan consultar, filtrar y actualizar con facilidad.' },
-  { icon: Wrench, title: 'Documentación y soporte TI', text: 'Documento cómo usar una herramienta, cómo mantenerla y qué revisar cuando algo falla.' },
-];
-
-const enfoque = [
-  ['Entender la tarea', 'Identifico quién usará la herramienta, qué necesita hacer y qué información requiere.'],
-  ['Construir la interfaz', 'Diseño un flujo claro e implemento los elementos que se repiten como componentes.'],
-  ['Validar y documentar', 'Compruebo los recorridos principales y dejo indicaciones para el mantenimiento.'],
-];
-
 export default function Propuesta() {
+  const aportes = [
+    'Desarrollo de interfaces web',
+    'Organización de información',
+    'Documentación y soporte TI'
+  ];
+  const principios = [
+    { titulo: 'Organización', texto: 'Componentes reutilizables y datos estructurados para facilitar los cambios.', icono: Layers },
+    { titulo: 'Usabilidad', texto: 'Navegación intuitiva, contenido legible y diseños adaptables.', icono: Monitor },
+    { titulo: 'Calidad', texto: 'Validaciones, pruebas funcionales y mantenimiento claro del código.', icono: ShieldCheck }
+  ];
+
   return (
-    <div className="container section page">
-      <PageHeading title="Propuesta de valor">
-        Diseño herramientas web para que consultar información y completar tareas cotidianas sea más sencillo.
+    <section className="container section page">
+      <PageHeading label="QUÉ PUEDO APORTAR" title="Mi propuesta de" emphasis="valor">
+        Soluciones digitales útiles, con enfoque en usabilidad, organización y evolución tecnológica.
       </PageHeading>
-      <section aria-labelledby="aportes">
-        <h2 id="aportes">Qué puedo aportar</h2>
-        <div className="feature-grid">
-          {aportes.map(({ icon, title, text }) => (
-            <FeatureCard key={title} icon={icon} title={title}>{text}</FeatureCard>
-          ))}
+      <section className="value-hero" aria-labelledby="soluciones-titulo">
+        <div className="value-art"><Code2 size={76}/><small>TECH · SOLUTIONS</small></div>
+        <div><span className="eyebrow">SECCIÓN 01</span><h2 id="soluciones-titulo">Soluciones tecnológicas con propósito</h2>
+          <p>Desarrollo de herramientas e interfaces para presentar información, simplificar procesos y facilitar tareas habituales.</p>
+          {aportes.map(aporte => <div key={aporte} className="tick"><CheckCircle2 size={18}/>{aporte}</div>)}
         </div>
       </section>
-      <section className="process-panel spaced" aria-labelledby="enfoque">
-        <div>
-          <h2 id="enfoque">Cómo trabajo</h2>
-          <Link className="button button-accent" to="/contacto">Hablemos de tu proyecto</Link>
+      <section aria-labelledby="metodologia-titulo">
+        <div className="timeline-heading"><span className="eyebrow">SECCIÓN 02</span><h2 id="metodologia-titulo">Mi enfoque profesional</h2><p>Aplicar buenas prácticas sin añadir complejidad innecesaria.</p></div>
+        <div className="stack-grid">
+          {principios.map(({titulo, texto, icono: Icono}) => <article className="card stack-card" key={titulo}>
+            <span className="tile-icon"><Icono size={24}/></span><h3>{titulo}</h3><p>{texto}</p>
+          </article>)}
         </div>
-        <ol className="process-list">
-          {enfoque.map(([titulo, texto]) => (
-            <li key={titulo}><h3>{titulo}</h3><p>{texto}</p></li>
-          ))}
-        </ol>
       </section>
-    </div>
+      <div className="value-cta"><div><h2>¿Tienes una idea en mente?</h2><p>Utiliza el formulario para establecer contacto.</p></div><Link to="/contacto" className="btn blue">Ir a contacto <ArrowRight size={17}/></Link></div>
+    </section>
   );
 }

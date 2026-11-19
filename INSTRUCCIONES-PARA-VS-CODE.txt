@@ -1,0 +1,36 @@
+TECHPORTFOLIO — ACTUALIZAR REPOSITORIO EN VS CODE (WINDOWS)
+
+1) Descarga y descomprime el ZIP entregado.
+2) Abre en VS Code el repositorio Git original TechPortfolio (el que ya clonaste).
+3) Desde el ZIP, copia la carpeta "TechPortfolio-CodeSandbox" dentro de la raíz de tu repositorio TechPortfolio.
+4) Windows preguntará si deseas combinar las carpetas y reemplazar archivos con los mismos nombres: confirma los reemplazos.
+   No copies una carpeta llamada TechPortfolio dentro de otra TechPortfolio ni reemplaces la carpeta .git.
+5) En VS Code abre Terminal > New Terminal. Si estás en la raíz del repositorio, ejecuta:
+
+   cd TechPortfolio-CodeSandbox
+   npm install
+   npm test
+   npm run build
+   npm run dev
+
+6) La terminal mostrará una URL local, normalmente http://localhost:5173/. Ábrela y navega por las cinco vistas.
+7) Cuando lo hayas verificado, publica desde Source Control: Stage All > Commit > Sync Changes.
+   También puedes usar desde la raíz del repo:
+
+   git add .
+   git commit -m "TechPortfolio completo - cinco vistas y funciones"
+   git push origin main
+
+CONTENIDO
+- 5 vistas: Inicio, Proyectos, Tecnologías, Contacto, Propuesta de valor.
+- 12 fichas con paginación 10/2 y sidebar de 8 atributos.
+- Dos filtros, componentes, Props, useState, useEffect, useContext y Promesas.
+- 3 tecnologías con SVG, 2 herramientas IA, timeline con 3 experiencias ficticias.
+- Contacto con 5 campos validados y cinco testimonios ficticios.
+- README, documentación académica y pruebas.
+
+ACLARACIONES
+- El perfil, las experiencias y los testimonios de ejemplo son ficticios para evaluar la interfaz.
+- En src/data/site.js configura perfil.email y el enlace LinkedIn real antes de usar correo de contacto público.
+- El envío usa mailto: abre una aplicación de correo; requiere confirmar el envío desde ella.
+- Esta versión no se ha subido automáticamente a tu GitHub.

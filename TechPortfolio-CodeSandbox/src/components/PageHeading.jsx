@@ -1,8 +1,9 @@
-export default function PageHeading({ title, children }) {
+export default function PageHeading({ label, title, emphasis, children }) {
   return (
-    <header className="page-heading">
-      <h1>{title}</h1>
-      {children && <p>{children}</p>}
-    </header>
+    <div className="page-head">
+      <span className="eyebrow">{label}</span>
+      <h1>{title} <em>{emphasis}</em></h1>
+      <p>{children}</p>
+    </div>
   );
 }

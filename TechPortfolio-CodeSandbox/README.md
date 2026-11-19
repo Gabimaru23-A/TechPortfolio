@@ -1,40 +1,60 @@
-# TechPortfolio — Portafolio profesional de soluciones TI
+# TechPortfolio — React + Vite
 
-Proyecto individual de **Interfaces en React 711-2026**, creado con React y Vite para usarse en CodeSandbox.
+Portafolio profesional de soluciones TI desarrollado como proyecto individual de **Interfaces en React 711-2026**.
 
-## Ejecutar en CodeSandbox
+> El sitio funciona como aplicación completa de cinco vistas. Algunos textos del perfil, las experiencias y los testimonios son **ficticios** y están identificados como tales para probar la interfaz. Las 12 fichas son propuestas conceptuales, no aplicaciones independientes terminadas.
 
-1. Importar el repositorio de GitHub y trabajar en la carpeta `TechPortfolio-CodeSandbox`.
-2. Ejecutar `npm install` para instalar las dependencias.
-3. Ejecutar `npm run dev` y abrir la vista previa del servidor Vite.
-4. También se puede verificar con `npm run build`.
+## Instalación y ejecución
 
-## Cinco vistas
+```bash
+npm install
+npm run dev
+```
 
-- `/#/` — Inicio y biografía con perfil académico, intereses y enlaces a Proyectos y Contacto.
-- `/#/proyectos` — 12 propuestas académicas, 10 por página, filtros combinables por categoría y tecnología, y panel lateral con ocho atributos.
-- `/#/tecnologias` — tres tecnologías, estudios, dos herramientas de IA y tres espacios para registrar experiencia.
-- `/#/contacto` — formulario validado para preparar un borrador de correo y cinco testimonios ilustrativos.
-- `/#/propuesta` — servicios que puedo aportar y método de trabajo.
+Abre la URL local que muestre Vite. Para verificar pruebas y compilación:
 
-## Implementación React y JavaScript
+```bash
+npm test
+npm run build
+```
 
-- Las vistas están en `src/pages/` y comparten componentes mediante Props, entre ellos `PageHeading`, `FeatureCard` y `ProjectCard`.
-- `useState` controla el menú, el formulario, los filtros, la página y el proyecto seleccionado.
-- `useEffect` carga el catálogo con `fetch`, sincroniza el diálogo lateral y actualiza el foco al navegar.
-- `useContext` comparte la selección entre las tarjetas y el panel lateral.
-- La carga encadena Promesas con `.then` y `.catch`, y usa `AbortController` para cancelar la solicitud al salir de la vista.
+Si partes del repositorio, la aplicación está en la carpeta `TechPortfolio-CodeSandbox`.
 
-El catálogo está en `public/data/proyectos.json`. Las tarjetas muestran **nombre, categoría, tecnología, estado y fecha**. El panel lateral añade **descripción, imagen y enlace**. El campo `id` identifica cada registro internamente. El panel se puede cerrar con su botón, con Escape o con un clic en el fondo cuando queda visible.
+## Estructura del proyecto
 
-## Datos del perfil y fichas
+- `src/pages/Inicio.jsx`: banner, presentación, biografía, redes y CTA.
+- `src/pages/Proyectos.jsx`: catálogo de 12 proyectos, carga con Promesas, filtros y paginación.
+- `src/pages/Tecnologias.jsx`: stack con imágenes, estudios, IA y timeline de tres experiencias.
+- `src/pages/Contacto.jsx`: validación de cinco campos, agradecimiento y cinco testimonios.
+- `src/pages/Propuesta.jsx`: dos secciones de propuesta de valor.
+- `src/components/`: navbar/footer, tarjetas, filtros, paginación y sidebar.
+- `src/context/PortfolioContext.jsx`: proyecto seleccionado compartido con `useContext`.
+- `src/data/site.js`: contenido de perfil, experiencias y testimonios.
+- `public/data/proyectos.json`: catálogo de 12 registros con ocho atributos comerciales (más ID interno).
+- `src/utils/logic.js`: lógica comprobable de filtros, paginación y validaciones.
+- `tests/logic.test.mjs`: pruebas con Node.js.
+- `docs/`: matriz de requisitos y guion de sustentación.
 
-El catálogo presenta propuestas académicas y los testimonios son ejemplos de maquetación. Las experiencias laborales quedan pendientes de registrar con datos reales. La foto de Inicio es una imagen ilustrativa generada para el portafolio.
+## Requisitos React y JavaScript
 
-Los datos personales y enlaces se editan en `src/perfil.js`. Agrega `email` para precargar el destinatario del borrador y `linkedin` para mostrar ese enlace en el sitio.
+- **Props:** componentes de tarjeta, filtros y paginación.
+- **useState:** formulario, filtros, página, carga y sidebar.
+- **useEffect:** recuperación asíncrona del JSON, encabezados y diálogo lateral.
+- **useContext:** estado compartido del proyecto seleccionado.
+- **Arreglos y objetos:** funciones `filter`, `map`, `slice`, `Set` y objetos JSON.
+- **Promesas:** `fetch(...).then(...).catch(...)`.
+- **Eventos:** cambios de campo, clics, envío de formularios y cierre de diálogo.
 
-El formulario valida nombre y apellidos, correo, teléfono y descripción. El enlace `mailto:` abre el borrador en la aplicación de correo del visitante, donde se puede completar el destinatario y enviar el mensaje.
+## Catalogación y formulario
 
-## Entregables
+Las tarjetas muestran **nombre, categoría, tecnología, estado y fecha**. El sidebar añade **descripción, imagen y enlace**, ocho campos en total. Los dos filtros se aplican conjuntamente y la paginación muestra **10 registros por página**.
 
-Repositorio GitHub con README, diapositivas con agenda, introducción, maquetación, línea de diseño, cinco vistas, demo y conclusiones; sustentación de diez minutos con cuatro de demostración. Entregar el código y las diapositivas el domingo anterior a la sustentación y enviar las evidencias por correo institucional.
+El formulario exige nombre, apellidos (máximo 20 letras), correo válido, teléfono numérico y descripción. `mailto:` abre un **borrador**; no constituye envío automático y no requiere backend. **Para enviar correos reales, configura `perfil.email` en `src/data/site.js`**. No guardamos los datos enviados.
+
+## Personalización final
+
+Sustituye el perfil de ejemplo, las tres experiencias ficticias y los cinco testimonios ficticios por datos verificables. El botón LinkedIn abre su sitio principal y debe reemplazarse por el perfil correcto. Si el profesor no acepta tres experiencias ficticias, utiliza experiencias reales o solicita autorización para presentar proyectos académicos equivalentes.
+
+## Entrega académica
+
+El documento del curso pide GitHub con README, diapositivas y sustentación oral de 10 minutos (4 de demo). Las diapositivas deben incluir agenda, introducción, maquetación, línea de diseño, las cinco vistas, demo y conclusiones.

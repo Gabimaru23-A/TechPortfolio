@@ -1,137 +1,90 @@
 import { useState } from 'react';
-import { Mail } from 'lucide-react';
+import { ArrowRight, CheckCircle2, Mail } from 'lucide-react';
 import PageHeading from '../components/PageHeading.jsx';
-import { SocialLinks } from '../components/Layout.jsx';
-import { perfil } from '../perfil.js';
+import { perfil, testimonios } from '../data/site.js';
+import { limpiarValorContacto, validarContacto } from '../utils/logic.js';
 
-const CAMPOS_INICIALES = { nombre: '', apellidos: '', correo: '', telefono: '', descripcion: '' };
-const NOMBRE_VALIDO = /^[\p{L}\p{M} ]+$/u;
-const CORREO_VALIDO = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-
-const testimonios = [
-  'Pude encontrar los proyectos de React con el filtro de tecnología.',
-  'El detalle me permitió consultar cada ficha en el mismo catálogo.',
-  'Encontré la información sobre el autor y su formación desde Inicio.',
-  'Pude recorrer las cinco vistas desde el celular.',
-  'El formulario me indicó qué campos debía revisar antes de preparar el mensaje.',
-];
-
-function ContactField({ name, label, value, onChange, error, multiline = false, ...props }) {
-  const Elemento = multiline ? 'textarea' : 'input';
-  const id = `contacto-${name}`;
-
-  return (
-    <div className="field">
-      <label htmlFor={id}>{label}</label>
-      <Elemento
-        id={id}
-        name={name}
-        value={value}
-        onChange={onChange}
-        required
-        aria-invalid={Boolean(error)}
-        aria-describedby={error ? `${id}-error` : undefined}
-        {...props}
-      />
-      {error && <small id={`${id}-error`} className="field-error">{error}</small>}
-    </div>
-  );
-}
-
-function ContactForm() {
-  const [formulario, setFormulario] = useState(CAMPOS_INICIALES);
-  const [errores, setErrores] = useState({});
-  const [borrador, setBorrador] = useState('');
-
-  function actualizar(evento) {
-    const { name, value } = evento.target;
-    setFormulario(anterior => ({ ...anterior, [name]: value }));
-    setErrores(anteriores => ({ ...anteriores, [name]: '' }));
-    setBorrador('');
-  }
-
-  function prepararCorreo(evento) {
-    evento.preventDefault();
-    const { nombre, apellidos, correo, telefono, descripcion } = formulario;
-    const erroresSiguientes = {};
-
-    if (!NOMBRE_VALIDO.test(nombre.trim())) erroresSiguientes.nombre = 'Escribe tu nombre usando solo letras.';
-    if (!NOMBRE_VALIDO.test(apellidos.trim())) erroresSiguientes.apellidos = 'Escribe tus apellidos usando solo letras.';
-    if (!CORREO_VALIDO.test(correo.trim())) erroresSiguientes.correo = 'Escribe un correo válido.';
-    if (!/^\d{1,15}$/.test(telefono.trim())) erroresSiguientes.telefono = 'Escribe un teléfono de hasta 15 dígitos.';
-    if (!descripcion.trim()) erroresSiguientes.descripcion = 'Describe tu proyecto o consulta.';
-    setErrores(erroresSiguientes);
-
-    const primerError = Object.keys(erroresSiguientes)[0];
-    if (primerError) {
-      evento.currentTarget.elements.namedItem(primerError).focus();
-      return;
-    }
-
-    const nombreCompleto = `${nombre.trim()} ${apellidos.trim()}`;
-    const asunto = encodeURIComponent(`Contacto TechPortfolio de ${nombreCompleto}`);
-    const cuerpo = encodeURIComponent([
-      `Nombre: ${nombreCompleto}`,
-      `Correo: ${correo.trim()}`,
-      `Teléfono: ${telefono.trim()}`,
-      '',
-      descripcion.trim(),
-    ].join('\r\n'));
-    setBorrador(`mailto:${perfil.email}?subject=${asunto}&body=${cuerpo}`);
-  }
-
-  function datosCampo(name) {
-    return { name, value: formulario[name], error: errores[name], onChange: actualizar };
-  }
-
-  return (
-    <form className="card contact-form" noValidate onSubmit={prepararCorreo}>
-      <p className="form-hint">Todos los campos son obligatorios.</p>
-      <div className="form-row">
-        <ContactField {...datosCampo('nombre')} label="Nombre" autoComplete="given-name" maxLength={20} />
-        <ContactField {...datosCampo('apellidos')} label="Apellidos" autoComplete="family-name" maxLength={20} />
-      </div>
-      <div className="form-row">
-        <ContactField {...datosCampo('correo')} label="Correo" type="email" autoComplete="email" />
-        <ContactField {...datosCampo('telefono')} label="Teléfono" type="tel" inputMode="numeric" autoComplete="tel-national" maxLength={15} />
-      </div>
-      <ContactField {...datosCampo('descripcion')} label="Descripción del proyecto o consulta" multiline rows={5} />
-      <button className="button button-primary" type="submit">Preparar correo</button>
-      <div role="status">
-        {borrador && (
-          <div className="draft">
-            <p>{perfil.email
-              ? 'Gracias. Tu borrador está listo para abrir en tu aplicación de correo.'
-              : 'Gracias. Tu borrador está listo. Completa el destinatario en tu aplicación de correo.'}</p>
-            <a className="text-link" href={borrador}>Abrir borrador de correo</a>
-          </div>
-        )}
-      </div>
-    </form>
-  );
-}
+const inicial = { nombre: '', apellidos: '', correo: '', telefono: '', descripcion: '' };
 
 export default function Contacto() {
+  const [formulario, setFormulario] = useState(inicial);
+  const [errores, setErrores] = useState({});
+  const [mensaje, setMensaje] = useState('');
+  const [enlaceCorreo, setEnlaceCorreo] = useState('');
+
+  function cambiar(evento) {
+    const { name, value } = evento.target;
+    setFormulario(actual => ({...actual, [name]: limpiarValorContacto(name, value)}));
+    setErrores(actual => ({...actual, [name]: ''}));
+    setMensaje('');
+    setEnlaceCorreo('');
+  }
+  function enviar(evento) {
+    evento.preventDefault();
+    const erroresEncontrados = validarContacto(formulario);
+    setErrores(erroresEncontrados);
+    if (Object.keys(erroresEncontrados).length) {
+      setMensaje('Revisa los campos señalados para continuar.');
+      return;
+    }
+    const nombreCompleto = `${formulario.nombre.trim()} ${formulario.apellidos.trim()}`;
+    const asunto = encodeURIComponent(`Contacto TechPortfolio - ${nombreCompleto}`);
+    const texto = encodeURIComponent([
+      `Nombre: ${nombreCompleto}`,
+      `Correo: ${formulario.correo.trim()}`,
+      `Teléfono: ${formulario.telefono.trim()}`,
+      '',
+      `Descripción del proyecto:`, formulario.descripcion.trim()
+    ].join('\n'));
+    const enlace = `mailto:${perfil.email}?subject=${asunto}&body=${texto}`;
+    setEnlaceCorreo(enlace);
+    // Abre la app de correo; el envío real lo confirma el visitante.
+    window.location.href = enlace;
+    setMensaje('¡Gracias por tu interés! Los datos se validaron correctamente. Abre el correo preparado y confirma su envío en tu aplicación de correo.');
+  }
+
   return (
-    <div className="container section page">
-      <PageHeading title="Contacto">
-        Comparte una idea para un proyecto, una consulta o una propuesta de colaboración.
+    <section className="container section page">
+      <PageHeading label="COMUNÍCATE" title="Formulario de" emphasis="contacto">
+        Comparte una idea o consulta mediante el siguiente formulario.
       </PageHeading>
       <div className="contact-grid">
-        <section className="contact-info" aria-labelledby="contacto-directo">
-          <span className="tile-icon"><Mail size={23} aria-hidden="true" /></span>
-          <h2 id="contacto-directo">Dónde encontrarme</h2>
-          <SocialLinks />
-          {perfil.email && <p><a className="text-link" href={`mailto:${perfil.email}`}>{perfil.email}</a></p>}
-        </section>
-        <ContactForm />
+        <aside className="contact-aside"><span className="contact-icon"><Mail size={28}/></span>
+          <h2>Hablemos de tu idea.</h2>
+          <p>El objetivo es ofrecer soluciones tecnológicas prácticas para personas y organizaciones.</p><hr/>
+          <p><strong>Canal de contacto:</strong> correo electrónico.</p>
+          <p>Al completar el formulario se abre un borrador en tu aplicación de correo. La entrega del mensaje depende de que confirmes el envío desde allí.</p>
+        </aside>
+        <form className="card contact-form" onSubmit={enviar} noValidate>
+          <div className="form-row">
+            {[["nombre", "Nombre"], ["apellidos", "Apellidos"]].map(([nombre, etiqueta]) => <label key={nombre}>
+              {etiqueta} *
+              <input name={nombre} value={formulario[nombre]} onChange={cambiar} maxLength={20} autoComplete={nombre === 'nombre' ? 'given-name' : 'family-name'} aria-invalid={Boolean(errores[nombre])} aria-describedby={errores[nombre] ? `error-${nombre}` : undefined}/>
+              {errores[nombre] && <small id={`error-${nombre}`} className="error">{errores[nombre]}</small>}
+            </label>)}
+          </div>
+          <div className="form-row">
+            <label>Correo electrónico *<input type="email" name="correo" value={formulario.correo} onChange={cambiar} autoComplete="email" aria-invalid={Boolean(errores.correo)}/>{errores.correo && <small className="error">{errores.correo}</small>}</label>
+            <label>Teléfono *<input type="tel" name="telefono" inputMode="numeric" maxLength={15} value={formulario.telefono} onChange={cambiar} autoComplete="tel" aria-invalid={Boolean(errores.telefono)}/>{errores.telefono && <small className="error">{errores.telefono}</small>}</label>
+          </div>
+          <label>Descripción del proyecto *<textarea name="descripcion" rows={6} value={formulario.descripcion} onChange={cambiar} aria-invalid={Boolean(errores.descripcion)}/>{errores.descripcion && <small className="error">{errores.descripcion}</small>}</label>
+          <button type="submit" className="btn blue">Enviar email <ArrowRight size={17}/></button>
+          {mensaje && <div role="status" className={enlaceCorreo ? 'success' : 'form-warning'}>
+            {enlaceCorreo && <CheckCircle2 size={18}/>} {mensaje}
+            {enlaceCorreo && <a className="draft-link" href={enlaceCorreo}>Abrir correo preparado</a>}
+          </div>}
+          <small>Todos los campos son obligatorios. No se guardan mensajes en un servidor.</small>
+        </form>
       </div>
-      <section className="spaced" aria-labelledby="testimonios">
-        <h2 id="testimonios">Testimonios de ejemplo</h2>
-        <ul className="testimonial-grid">
-          {testimonios.map(texto => <li className="card testimonial" key={texto}><q>{texto}</q></li>)}
-        </ul>
+      <section aria-labelledby="testimonios-titulo">
+        <div className="timeline-heading"><span className="eyebrow">OPINIONES</span><h2 id="testimonios-titulo">Testimonios</h2><p>Opiniones ficticias para completar esta sección de la interfaz.</p></div>
+        <div className="testimonial-grid">
+          {testimonios.map(persona => <article className="card testimonial" key={persona.nombre}>
+            <strong aria-hidden="true">“</strong><p>{persona.texto}</p>
+            <small>{persona.nombre} · {persona.cargo}</small>
+          </article>)}
+        </div>
       </section>
-    </div>
+    </section>
   );
 }

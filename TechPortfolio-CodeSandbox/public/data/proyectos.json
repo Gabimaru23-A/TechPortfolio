@@ -1,13 +1,13 @@
 [
   {
     "id": "TP-001",
-    "nombre": "Inventario TI",
+    "nombre": "TechPortfolio — Portafolio React",
     "categoria": "Desarrollo web",
     "tecnologia": "React",
-    "estado": "Propuesta",
+    "estado": "Diseño",
     "fecha": "2026-11-01",
-    "descripcion": "Propuesta para registrar equipos TI y consultar su ubicación, asignación y estado. La vista de inventario ayudaría a identificar qué equipos están disponibles o requieren mantenimiento.",
-    "imagen": "/placeholder.svg",
+    "descripcion": "Aplicación académica para presentar un perfil profesional y explorar proyectos usando React, filtros, paginación, panel lateral y formulario. Este es el proyecto actual.",
+    "imagen": "images/proyecto-01.svg",
     "enlace": null
   },
   {
@@ -17,8 +17,8 @@
     "tecnologia": "JavaScript",
     "estado": "Propuesta",
     "fecha": "2026-11-02",
-    "descripcion": "Propuesta de una interfaz para organizar registros de usuarios en un directorio interno. El listado incluiría búsqueda por nombre y filtros por área y estado del registro.",
-    "imagen": "/placeholder.svg",
+    "descripcion": "Ejemplo ficticio TP-002 de gestión de usuarios. Ficha de demostración creada para comprobar tarjetas, filtros, paginación y detalle; no es un software desarrollado.",
+    "imagen": "images/proyecto-02.svg",
     "enlace": null
   },
   {
@@ -28,8 +28,8 @@
     "tecnologia": "React",
     "estado": "Propuesta",
     "fecha": "2026-11-03",
-    "descripcion": "Propuesta de una mesa de ayuda para registrar solicitudes de soporte y priorizarlas. Cada ficha reuniría el problema, la persona asignada y el avance de la atención.",
-    "imagen": "/placeholder.svg",
+    "descripcion": "Ejemplo ficticio TP-003 de mesa de ayuda. Ficha de demostración creada para comprobar tarjetas, filtros, paginación y detalle; no es un software desarrollado.",
+    "imagen": "images/proyecto-03.svg",
     "enlace": null
   },
   {
@@ -37,10 +37,10 @@
     "nombre": "Sitio corporativo",
     "categoria": "Desarrollo web",
     "tecnologia": "HTML y CSS",
-    "estado": "Propuesta",
+    "estado": "Diseño",
     "fecha": "2026-11-04",
-    "descripcion": "Propuesta de sitio informativo para una organización de servicios. Incluye una estructura para presentar la empresa, explicar sus servicios e indicar los canales de contacto.",
-    "imagen": "/placeholder.svg",
+    "descripcion": "Ejemplo ficticio TP-004 de sitio corporativo. Ficha de demostración creada para comprobar tarjetas, filtros, paginación y detalle; no es un software desarrollado.",
+    "imagen": "images/proyecto-04.svg",
     "enlace": null
   },
   {
@@ -50,8 +50,8 @@
     "tecnologia": "JavaScript",
     "estado": "Propuesta",
     "fecha": "2026-11-05",
-    "descripcion": "Propuesta para documentar fallas en equipos o aplicaciones. El registro conservaría la fecha, el alcance, las acciones realizadas y el resultado de cada intervención.",
-    "imagen": "/placeholder.svg",
+    "descripcion": "Ejemplo ficticio TP-005 de registro de incidencias. Ficha de demostración creada para comprobar tarjetas, filtros, paginación y detalle; no es un software desarrollado.",
+    "imagen": "images/proyecto-05.svg",
     "enlace": null
   },
   {
@@ -61,8 +61,8 @@
     "tecnologia": "React",
     "estado": "Propuesta",
     "fecha": "2026-11-06",
-    "descripcion": "Propuesta de un panel para consultar solicitudes de soporte abiertas y resueltas. La vista resumiría el volumen de casos y los tiempos de atención por periodo.",
-    "imagen": "/placeholder.svg",
+    "descripcion": "Ejemplo ficticio TP-006 de panel de indicadores. Ficha de demostración creada para comprobar tarjetas, filtros, paginación y detalle; no es un software desarrollado.",
+    "imagen": "images/proyecto-06.svg",
     "enlace": null
   },
   {
@@ -70,10 +70,10 @@
     "nombre": "Documentación QA",
     "categoria": "Calidad de software",
     "tecnologia": "JavaScript",
-    "estado": "Propuesta",
+    "estado": "Diseño",
     "fecha": "2026-11-07",
-    "descripcion": "Propuesta de un espacio para documentar casos de prueba. Cada caso incluiría pasos, condiciones iniciales, resultado esperado, resultado observado y evidencias.",
-    "imagen": "/placeholder.svg",
+    "descripcion": "Ejemplo ficticio TP-007 de documentación qa. Ficha de demostración creada para comprobar tarjetas, filtros, paginación y detalle; no es un software desarrollado.",
+    "imagen": "images/proyecto-07.svg",
     "enlace": null
   },
   {
@@ -83,8 +83,8 @@
     "tecnologia": "HTML y CSS",
     "estado": "Propuesta",
     "fecha": "2026-11-08",
-    "descripcion": "Propuesta para organizar el historial de mantenimiento preventivo y correctivo de equipos. La ficha mostraría qué se revisó y cuándo corresponde la próxima intervención.",
-    "imagen": "/placeholder.svg",
+    "descripcion": "Ejemplo ficticio TP-008 de registro de mantenimiento. Ficha de demostración creada para comprobar tarjetas, filtros, paginación y detalle; no es un software desarrollado.",
+    "imagen": "images/proyecto-08.svg",
     "enlace": null
   },
   {
@@ -94,8 +94,8 @@
     "tecnologia": "React",
     "estado": "Propuesta",
     "fecha": "2026-11-09",
-    "descripcion": "Propuesta para consultar qué recursos están disponibles, a quién se prestaron y cuándo deben devolverse. Está pensada para espacios como laboratorios académicos.",
-    "imagen": "/placeholder.svg",
+    "descripcion": "Ejemplo ficticio TP-009 de control de préstamos. Ficha de demostración creada para comprobar tarjetas, filtros, paginación y detalle; no es un software desarrollado.",
+    "imagen": "images/proyecto-09.svg",
     "enlace": null
   },
   {
@@ -103,10 +103,10 @@
     "nombre": "Checklist de pruebas",
     "categoria": "Calidad de software",
     "tecnologia": "JavaScript",
-    "estado": "Propuesta",
+    "estado": "Diseño",
     "fecha": "2026-11-10",
-    "descripcion": "Propuesta de lista para revisar una interfaz antes de publicarla. Incluye verificaciones de navegación, formularios, lectura en pantallas pequeñas y uso mediante teclado.",
-    "imagen": "/placeholder.svg",
+    "descripcion": "Ejemplo ficticio TP-010 de checklist de pruebas. Ficha de demostración creada para comprobar tarjetas, filtros, paginación y detalle; no es un software desarrollado.",
+    "imagen": "images/proyecto-10.svg",
     "enlace": null
   },
   {
@@ -116,8 +116,8 @@
     "tecnologia": "React",
     "estado": "Propuesta",
     "fecha": "2026-11-11",
-    "descripcion": "Propuesta de catálogo para consultar productos por categoría y disponibilidad. Las fichas presentarían imágenes y datos básicos para facilitar la comparación.",
-    "imagen": "/placeholder.svg",
+    "descripcion": "Ejemplo ficticio TP-011 de catálogo de productos. Ficha de demostración creada para comprobar tarjetas, filtros, paginación y detalle; no es un software desarrollado.",
+    "imagen": "images/proyecto-11.svg",
     "enlace": null
   },
   {
@@ -127,8 +127,8 @@
     "tecnologia": "JavaScript",
     "estado": "Propuesta",
     "fecha": "2026-11-12",
-    "descripcion": "Propuesta para documentar dispositivos de una red local. El inventario reuniría el tipo de equipo, la ubicación y las observaciones de configuración o mantenimiento.",
-    "imagen": "/placeholder.svg",
+    "descripcion": "Ejemplo ficticio TP-012 de dispositivos de red. Ficha de demostración creada para comprobar tarjetas, filtros, paginación y detalle; no es un software desarrollado.",
+    "imagen": "images/proyecto-12.svg",
     "enlace": null
   }
 ]
