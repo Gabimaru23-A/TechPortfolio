@@ -1,22 +1,30 @@
-import { ArrowRight, CalendarDays, Layers } from 'lucide-react';
-import { usePortfolio } from '../context/PortfolioContext.jsx';
+import { CalendarDays } from 'lucide-react';
 
-// Cinco atributos de negocio: nombre, categoría, tecnología, estado y fecha.
-export default function ProjectCard({ proyecto }) {
-  const { abrir } = usePortfolio();
+export default function ProjectCard({ proyecto, alAbrir }) {
+  const imagen = `${import.meta.env.BASE_URL}${proyecto.imagen.replace(/^\//, '')}`;
   return (
     <article className="card project-card">
-      <div className="card-line"><span className="record-id">{proyecto.id}</span><span className="chip">{proyecto.estado}</span></div>
-      <span className="tile-icon"><Layers size={24} aria-hidden="true"/></span>
+      <img className="project-image" src={imagen} alt="" loading="lazy" decoding="async" />
+      <div className="card-line">
+        <span className="project-type">{proyecto.conceptual ? 'Propuesta conceptual' : 'Proyecto del portafolio'}</span>
+        <span className="chip">{proyecto.estado}</span>
+      </div>
       <h3>{proyecto.nombre}</h3>
       <p className="project-category">{proyecto.categoria}</p>
       <p className="project-description">{proyecto.descripcion}</p>
       <div className="project-meta">
         <span>{proyecto.tecnologia}</span>
-        <span><CalendarDays size={14} aria-hidden="true"/>{proyecto.fecha}</span>
+        <span><CalendarDays size={16} aria-hidden="true" /><time dateTime={proyecto.fecha}>{proyecto.fecha}</time></span>
       </div>
-      <button className="link-button project-action" type="button" onClick={event => abrir(proyecto, event.currentTarget)}>
-        Explorar proyecto <ArrowRight size={17}/>
+      <button
+        className="link-button project-action"
+        type="button"
+        id={`detalle-${proyecto.id}`}
+        aria-label={`Ver detalle de ${proyecto.nombre}`}
+        aria-haspopup="dialog"
+        onClick={() => alAbrir(proyecto)}
+      >
+        Ver detalle
       </button>
     </article>
   );

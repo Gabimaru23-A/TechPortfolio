@@ -1,14 +1,41 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 480">
-      <defs><linearGradient id="g" x2="1" y2="1"><stop stop-color="#15384f"/><stop offset="1" stop-color="#1b8b71"/></linearGradient></defs>
-      <rect width="800" height="480" rx="28" fill="url(#g)"/>
-      <circle cx="660" cy="90" r="180" fill="#fff" opacity=".06"/><circle cx="650" cy="380" r="110" fill="#fff" opacity=".07"/>
-      <rect x="105" y="100" width="590" height="260" rx="17" fill="#fff" fill-opacity=".13" stroke="#fff" stroke-opacity=".26" stroke-width="2"/>
-      <rect x="130" y="126" width="540" height="35" rx="7" fill="#fff" fill-opacity=".15"/>
-      <circle cx="151" cy="143" r="6" fill="#9ff3e2"/><circle cx="171" cy="143" r="6" fill="#fff" opacity=".7"/>
-      <text x="630" y="151" fill="#fff" font-family="Arial,sans-serif" font-size="16" text-anchor="end">TP-03</text>
-      <rect x="135" y="198" width="90" height="89" rx="15" fill="#92e3d8" opacity=".91"/>
-      <path d="M156 241h47m-37-14h27m-27 28h27" fill="none" stroke="#15384f" stroke-width="6" stroke-linecap="round"/>
-      <text x="250" y="226" fill="#fff" font-family="Arial,sans-serif" font-weight="bold" font-size="27">Mesa de ayuda</text>
-      <text x="250" y="260" fill="#c6f4ec" font-family="Arial,sans-serif" font-size="20">Soporte TI</text>
-      <text x="400" y="416" fill="#eafefd" font-family="Arial,sans-serif" font-size="23" font-weight="bold" text-anchor="middle">TechPortfolio</text>
-    </svg>
+  <title>Tablero de solicitudes para una mesa de ayuda</title>
+  <defs>
+    <linearGradient id="fondo" x2="100%" y2="100%">
+      <stop stop-color="#253132"/>
+      <stop offset="1" stop-color="#151e21"/>
+    </linearGradient>
+    <radialGradient id="luz" cx="50%" cy="48%" r="54%">
+      <stop stop-color="#83cfca" stop-opacity=".15"/>
+      <stop offset="1" stop-color="#83cfca" stop-opacity="0"/>
+    </radialGradient>
+    <pattern id="puntos" width="25" height="25" patternUnits="userSpaceOnUse">
+      <circle cx="13" cy="13" r="1" fill="#83cfca" fill-opacity=".16"/>
+    </pattern>
+  </defs>
+  <rect width="800" height="480" fill="url(#fondo)"/>
+  <rect width="800" height="480" fill="url(#luz)"/>
+  <rect x="40" y="35" width="720" height="410" rx="28" fill="url(#puntos)"/>
+  <g fill="#1c292c" stroke="#486264" stroke-width="2">
+    <rect x="111" y="115" width="176" height="247" rx="16"/>
+    <rect x="312" y="115" width="176" height="247" rx="16"/>
+    <rect x="513" y="115" width="176" height="247" rx="16"/>
+  </g>
+  <g stroke-width="9" stroke-linecap="round">
+    <path d="M133 146h85" stroke="#dba97b"/><path d="M334 146h94" stroke="#83cfca"/><path d="M535 146h74" stroke="#a9cc8c"/>
+  </g>
+  <g fill="#314448">
+    <rect x="130" y="174" width="138" height="54" rx="9"/><rect x="130" y="239" width="138" height="54" rx="9"/><rect x="130" y="304" width="138" height="39" rx="9"/>
+    <rect x="331" y="174" width="138" height="54" rx="9"/><rect x="331" y="239" width="138" height="54" rx="9"/>
+    <rect x="532" y="174" width="138" height="54" rx="9"/>
+  </g>
+  <g fill="#789494">
+    <circle cx="150" cy="201" r="6"/><circle cx="150" cy="266" r="6"/><circle cx="150" cy="324" r="6"/>
+    <circle cx="351" cy="201" r="6"/><circle cx="351" cy="266" r="6"/><circle cx="552" cy="201" r="6"/>
+  </g>
+  <path d="M165 201h72m-72 65h60m-60 58h78m123-123h66m-66 65h56m145-65h65" stroke="#789494" stroke-width="7" stroke-linecap="round"/>
+  <path d="M443 258h147a17 17 0 0 1 17 17v68a17 17 0 0 1-17 17h-62l-40 30v-30h-45a17 17 0 0 1-17-17v-68a17 17 0 0 1 17-17z" fill="#83cfca"/>
+  <g fill="none" stroke="#1b4747" stroke-width="7" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M485 315v-10a31 31 0 0 1 62 0v10m-62 0a10 10 0 0 0 10 10h4v-24h-4a10 10 0 0 0-10 10m62 4a10 10 0 0 1-10 10h-4v-24h4a10 10 0 0 1 10 10m-10 14a17 17 0 0 1-16 12h-7"/>
+  </g>
+</svg>

@@ -1,52 +1,72 @@
 import { useState } from 'react';
-import { ArrowRight, CheckCircle2, Mail } from 'lucide-react';
+import { CheckCircle2, Mail } from 'lucide-react';
 import PageHeading from '../components/PageHeading.jsx';
 import { perfil, testimonios } from '../data/site.js';
-import { limpiarValorContacto, validarContacto } from '../utils/logic.js';
+import { crearEnlaceCorreo, validarContacto } from '../utils/logic.js';
 
 const inicial = { nombre: '', apellidos: '', correo: '', telefono: '', descripcion: '' };
+const destinatario = import.meta.env.VITE_CONTACT_EMAIL?.trim() || perfil.email;
+const ayudaNombre = 'Hasta 20 letras, sin espacios.';
+
+function CampoContacto({ nombre, etiqueta, valor, error, cambiar, ayuda, multilinea, ...atributos }) {
+  const Entrada = multilinea ? 'textarea' : 'input';
+  const id = `contacto-${nombre}`;
+  const descripcion = error ? `${id}-error` : ayuda ? `${id}-ayuda` : undefined;
+
+  return (
+    <div className="form-field">
+      <label htmlFor={id}>{etiqueta}</label>
+      <Entrada
+        id={id}
+        name={nombre}
+        value={valor}
+        onChange={cambiar}
+        required
+        aria-invalid={Boolean(error)}
+        aria-describedby={descripcion}
+        {...atributos}
+      />
+      {error && <small id={`${id}-error`} className="error">{error}</small>}
+      {ayuda && !error && <small id={`${id}-ayuda`} className="field-hint">{ayuda}</small>}
+    </div>
+  );
+}
 
 export default function Contacto() {
   const [formulario, setFormulario] = useState(inicial);
   const [errores, setErrores] = useState({});
-  const [mensaje, setMensaje] = useState('');
-  const [enlaceCorreo, setEnlaceCorreo] = useState('');
+  const [resultado, setResultado] = useState(null);
 
   function cambiar(evento) {
     const { name, value } = evento.target;
-    setFormulario(actual => ({...actual, [name]: limpiarValorContacto(name, value)}));
-    setErrores(actual => ({...actual, [name]: ''}));
-    setMensaje('');
-    setEnlaceCorreo('');
+    setFormulario(actual => ({ ...actual, [name]: value }));
+    setErrores(actual => ({ ...actual, [name]: '' }));
+    setResultado(null);
   }
-  function enviar(evento) {
+
+  function prepararBorrador(evento) {
     evento.preventDefault();
     const erroresEncontrados = validarContacto(formulario);
     setErrores(erroresEncontrados);
-    if (Object.keys(erroresEncontrados).length) {
-      setMensaje('Revisa los campos señalados para continuar.');
+
+    const [primerCampoInvalido] = Object.keys(erroresEncontrados);
+    if (primerCampoInvalido) {
+      setResultado({ mensaje: 'Revisa los campos señalados para continuar.' });
+      evento.currentTarget.elements.namedItem(primerCampoInvalido).focus();
       return;
     }
-    const emailDestino = import.meta.env.VITE_CONTACT_EMAIL || perfil.email;
-    if (!emailDestino) {
-      setEnlaceCorreo('');
-      setMensaje('El correo de destino aún no está configurado. Define VITE_CONTACT_EMAIL en el archivo .env.local y vuelve a intentarlo.');
-      return;
-    }
-    const nombreCompleto = `${formulario.nombre.trim()} ${formulario.apellidos.trim()}`;
-    const asunto = encodeURIComponent(`Contacto TechPortfolio - ${nombreCompleto}`);
-    const texto = encodeURIComponent([
-      `Nombre: ${nombreCompleto}`,
-      `Correo: ${formulario.correo.trim()}`,
-      `Teléfono: ${formulario.telefono.trim()}`,
-      '',
-      `Descripción del proyecto:`, formulario.descripcion.trim()
-    ].join('\n'));
-    const enlace = `mailto:${emailDestino}?subject=${asunto}&body=${texto}`;
-    setEnlaceCorreo(enlace);
-    // Abre la app de correo; el envío real lo confirma el visitante.
-    window.location.href = enlace;
-    setMensaje('¡Gracias por tu interés! Los datos se validaron correctamente. Abre el correo preparado y confirma su envío en tu aplicación de correo.');
+
+    const enlace = crearEnlaceCorreo(destinatario, formulario);
+    setResultado(enlace ? {
+      enlace,
+      mensaje: 'Los datos son válidos. Revisa el borrador y confirma el envío en tu aplicación de correo.'
+    } : {
+      mensaje: 'Los datos son válidos. Para habilitar el borrador, configura un correo de destino válido en VITE_CONTACT_EMAIL.'
+    });
+  }
+
+  function campo(nombre) {
+    return { nombre, valor: formulario[nombre], error: errores[nombre], cambiar };
   }
 
   return (
@@ -55,40 +75,49 @@ export default function Contacto() {
         Comparte una idea o consulta mediante el siguiente formulario.
       </PageHeading>
       <div className="contact-grid">
-        <aside className="contact-aside"><span className="contact-icon"><Mail size={28}/></span>
-          <h2>Hablemos de tu idea.</h2>
-          <p>El objetivo es ofrecer soluciones tecnológicas prácticas para personas y organizaciones.</p><hr/>
-          <p><strong>Canal de contacto:</strong> correo electrónico.</p>
-          <p>Al completar el formulario se abre un borrador en tu aplicación de correo. La entrega del mensaje depende de que confirmes el envío desde allí.</p>
+        <aside className="contact-aside">
+          <span className="contact-icon" aria-hidden="true"><Mail size={28} /></span>
+          <h2>Hablemos de tu idea</h2>
+          <p>Cuenta qué problema quieres resolver, quién usaría la solución y qué información conviene tener en cuenta.</p>
+          <p>El formulario prepara un borrador que puedes revisar y enviar desde tu aplicación de correo.</p>
         </aside>
-        <form className="card contact-form" onSubmit={enviar} noValidate>
+        <form className="card contact-form" onSubmit={prepararBorrador} noValidate>
+          <small>Todos los campos son obligatorios.</small>
           <div className="form-row">
-            {[["nombre", "Nombre"], ["apellidos", "Apellidos"]].map(([nombre, etiqueta]) => <label key={nombre}>
-              {etiqueta} *
-              <input name={nombre} value={formulario[nombre]} onChange={cambiar} maxLength={20} autoComplete={nombre === 'nombre' ? 'given-name' : 'family-name'} aria-invalid={Boolean(errores[nombre])} aria-describedby={errores[nombre] ? `error-${nombre}` : undefined}/>
-              {errores[nombre] && <small id={`error-${nombre}`} className="error">{errores[nombre]}</small>}
-            </label>)}
+            <CampoContacto {...campo('nombre')} etiqueta="Nombre" ayuda={ayudaNombre} autoComplete="given-name" />
+            <CampoContacto {...campo('apellidos')} etiqueta="Apellidos" ayuda={ayudaNombre} autoComplete="family-name" />
           </div>
           <div className="form-row">
-            <label>Correo electrónico *<input type="email" name="correo" value={formulario.correo} onChange={cambiar} autoComplete="email" aria-invalid={Boolean(errores.correo)}/>{errores.correo && <small className="error">{errores.correo}</small>}</label>
-            <label>Teléfono *<input type="tel" name="telefono" inputMode="numeric" maxLength={15} value={formulario.telefono} onChange={cambiar} autoComplete="tel" aria-invalid={Boolean(errores.telefono)}/>{errores.telefono && <small className="error">{errores.telefono}</small>}</label>
+            <CampoContacto {...campo('correo')} etiqueta="Correo electrónico" type="email" autoComplete="email" />
+            <CampoContacto {...campo('telefono')} etiqueta="Teléfono" type="tel" inputMode="numeric" autoComplete="tel" />
           </div>
-          <label>Descripción del proyecto *<textarea name="descripcion" rows={6} minLength={20} value={formulario.descripcion} onChange={cambiar} aria-invalid={Boolean(errores.descripcion)}/>{errores.descripcion && <small className="error">{errores.descripcion}</small>}</label>
-          <button type="submit" className="btn blue">Enviar email <ArrowRight size={17}/></button>
-          {mensaje && <div role="status" className={enlaceCorreo ? 'success' : 'form-warning'}>
-            {enlaceCorreo && <CheckCircle2 size={18}/>} {mensaje}
-            {enlaceCorreo && <a className="draft-link" href={enlaceCorreo}>Abrir correo preparado</a>}
-          </div>}
-          <small>Todos los campos son obligatorios. No se guardan mensajes en un servidor.</small>
+          <CampoContacto {...campo('descripcion')} etiqueta="Descripción del proyecto" multilinea rows={5} />
+          <div className="contact-actions">
+            <button type="submit" className="btn blue">Preparar borrador</button>
+            <div role="status">
+              {resultado && (
+                <div className={resultado.enlace ? 'success' : 'form-warning'}>
+                  {resultado.enlace && <CheckCircle2 size={18} aria-hidden="true" />}
+                  <span>{resultado.mensaje}</span>
+                  {resultado.enlace && <a className="draft-link" href={resultado.enlace}>Abrir borrador de correo</a>}
+                </div>
+              )}
+            </div>
+          </div>
         </form>
       </div>
       <section aria-labelledby="testimonios-titulo">
-        <div className="timeline-heading"><span className="eyebrow">OPINIONES</span><h2 id="testimonios-titulo">Testimonios</h2><p>Opiniones ficticias para completar esta sección de la interfaz.</p></div>
+        <div className="timeline-heading">
+          <h2 id="testimonios-titulo">Testimonios</h2>
+          <p>Opiniones ficticias sobre la experiencia de uso de TechPortfolio.</p>
+        </div>
         <div className="testimonial-grid">
-          {testimonios.map(persona => <article className="card testimonial" key={persona.nombre}>
-            <strong aria-hidden="true">“</strong><p>{persona.texto}</p>
-            <small>{persona.nombre} · {persona.cargo}</small>
-          </article>)}
+          {testimonios.map(persona => (
+            <figure className="card testimonial" key={persona.nombre}>
+              <blockquote><p>{persona.texto}</p></blockquote>
+              <figcaption><strong>{persona.nombre}</strong><small>{persona.cargo}</small></figcaption>
+            </figure>
+          ))}
         </div>
       </section>
     </section>

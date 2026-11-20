@@ -14,23 +14,61 @@ export function paginar(items, pagina = 1, tamano = TAMANO_PAGINA) {
   return {totalPages, paginaActual, visibles: items.slice(inicio, inicio + tamano)};
 }
 
-const letra = /[^\p{L}\p{M} ]/gu;
-const nombreValido = /^[\p{L}\p{M} ]+$/u;
-const emailValido = /^[^\s@]+@(gmail|hotmail)\.com$/i;
-export function limpiarValorContacto(nombre, valor) {
-  if (nombre === 'nombre' || nombre === 'apellidos') return valor.replace(letra, '').slice(0,20);
-  if (nombre === 'telefono') return valor.replace(/\D/g, '').slice(0,15);
-  return valor;
+const nombreValido = /^(?:\p{L}\p{M}*)+$/u;
+const parteLocalValida = /^[\p{L}\p{M}\p{N}!#$%&'*+/=?^_`{|}~-]+(?:\.[\p{L}\p{M}\p{N}!#$%&'*+/=?^_`{|}~-]+)*$/u;
+const etiquetaDominioValida = /^(?!-)[\p{L}\p{M}\p{N}-]{1,63}(?<!-)$/u;
+
+function esCorreoValido(correo) {
+  const partes = correo.split('@');
+  if (partes.length !== 2 || correo.length > 254) return false;
+
+  const [local, dominio] = partes;
+  const etiquetas = dominio.split('.');
+  return local.length <= 64 && parteLocalValida.test(local) &&
+    etiquetas.length >= 2 && etiquetas.every(etiqueta => etiquetaDominioValida.test(etiqueta));
 }
+
 export function validarContacto(formulario) {
   const errores = {};
-  for (const campo of ['nombre','apellidos']) {
-    const valor = formulario[campo]?.trim() || '';
-    if (!valor || valor.length > 20 || !nombreValido.test(valor)) errores[campo] = 'Usa solo letras, máximo 20 caracteres.';
+
+  for (const campo of ['nombre', 'apellidos']) {
+    const valor = formulario[campo] || '';
+    if (!valor.trim()) {
+      errores[campo] = campo === 'nombre' ? 'Escribe tu nombre.' : 'Escribe tus apellidos.';
+    } else if (!nombreValido.test(valor) || valor.match(/\p{L}/gu).length > 20) {
+      errores[campo] = 'Usa hasta 20 letras, sin espacios.';
+    }
   }
-  if (!emailValido.test((formulario.correo || '').trim())) errores.correo = 'Usa un correo @gmail.com o @hotmail.com.';
-  if (!/^\d{1,15}$/.test(formulario.telefono || '')) errores.telefono = 'Ingresa solo números (1 a 15 dígitos).';
+
+  const correo = (formulario.correo || '').trim();
+  if (!correo) errores.correo = 'Escribe tu correo electrónico.';
+  else if (!esCorreoValido(correo)) errores.correo = 'Escribe un correo con formato válido.';
+
+  const telefono = formulario.telefono || '';
+  if (!telefono.trim()) errores.telefono = 'Escribe tu teléfono.';
+  else if (!/^\d+$/.test(telefono)) errores.telefono = 'Usa solo números, sin espacios ni símbolos.';
+
   if (!(formulario.descripcion || '').trim()) errores.descripcion = 'Escribe la descripción del proyecto.';
-  if ((formulario.descripcion || '').trim().length < 20) errores.descripcion = 'La descripción debe tener al menos 20 caracteres.';
   return errores;
+}
+
+export function crearEnlaceCorreo(destino, formulario) {
+  const correo = (destino || '').trim();
+  if (!esCorreoValido(correo)) return '';
+
+  const [local, dominio] = correo.split('@');
+  const destinatario = `${encodeURIComponent(local)}@${encodeURIComponent(dominio)}`;
+  const nombre = `${formulario.nombre} ${formulario.apellidos}`.normalize('NFC');
+  const asunto = `Contacto TechPortfolio - ${nombre}`;
+  const descripcion = formulario.descripcion.trim().replace(/\r\n?|\n/g, '\r\n');
+  const cuerpo = [
+    `Nombre: ${nombre}`,
+    `Correo: ${formulario.correo.trim()}`,
+    `Teléfono: ${formulario.telefono}`,
+    '',
+    'Descripción del proyecto:',
+    descripcion
+  ].join('\r\n');
+
+  return `mailto:${destinatario}?subject=${encodeURIComponent(asunto)}&body=${encodeURIComponent(cuerpo)}`;
 }

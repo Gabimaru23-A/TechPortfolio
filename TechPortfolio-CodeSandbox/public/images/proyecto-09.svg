@@ -1,14 +1,37 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 480">
-      <defs><linearGradient id="g" x2="1" y2="1"><stop stop-color="#123b5b"/><stop offset="1" stop-color="#207d8e"/></linearGradient></defs>
-      <rect width="800" height="480" rx="28" fill="url(#g)"/>
-      <circle cx="660" cy="90" r="180" fill="#fff" opacity=".06"/><circle cx="650" cy="380" r="110" fill="#fff" opacity=".07"/>
-      <rect x="105" y="100" width="590" height="260" rx="17" fill="#fff" fill-opacity=".13" stroke="#fff" stroke-opacity=".26" stroke-width="2"/>
-      <rect x="130" y="126" width="540" height="35" rx="7" fill="#fff" fill-opacity=".15"/>
-      <circle cx="151" cy="143" r="6" fill="#9ff3e2"/><circle cx="171" cy="143" r="6" fill="#fff" opacity=".7"/>
-      <text x="630" y="151" fill="#fff" font-family="Arial,sans-serif" font-size="16" text-anchor="end">TP-09</text>
-      <rect x="135" y="198" width="90" height="89" rx="15" fill="#92e3d8" opacity=".91"/>
-      <path d="M156 241h47m-37-14h27m-27 28h27" fill="none" stroke="#123b5b" stroke-width="6" stroke-linecap="round"/>
-      <text x="250" y="226" fill="#fff" font-family="Arial,sans-serif" font-weight="bold" font-size="27">Control de préstamos</text>
-      <text x="250" y="260" fill="#c6f4ec" font-family="Arial,sans-serif" font-size="20">Desarrollo web</text>
-      <text x="400" y="416" fill="#eafefd" font-family="Arial,sans-serif" font-size="23" font-weight="bold" text-anchor="middle">TechPortfolio</text>
-    </svg>
+  <title>Préstamo y devolución de un equipo</title>
+  <defs>
+    <linearGradient id="fondo" x2="100%" y2="100%">
+      <stop stop-color="#332d27"/>
+      <stop offset="1" stop-color="#211e19"/>
+    </linearGradient>
+    <radialGradient id="luz" cx="50%" cy="48%" r="54%">
+      <stop stop-color="#dbbd94" stop-opacity=".15"/>
+      <stop offset="1" stop-color="#dbbd94" stop-opacity="0"/>
+    </radialGradient>
+    <pattern id="puntos" width="25" height="25" patternUnits="userSpaceOnUse">
+      <circle cx="13" cy="13" r="1" fill="#dbbd94" fill-opacity=".16"/>
+    </pattern>
+  </defs>
+  <rect width="800" height="480" fill="url(#fondo)"/>
+  <rect width="800" height="480" fill="url(#luz)"/>
+  <rect x="40" y="35" width="720" height="410" rx="28" fill="url(#puntos)"/>
+  <g fill="#362e27" stroke="#6f5d4d" stroke-width="2">
+    <rect x="91" y="113" width="261" height="256" rx="18"/><rect x="448" y="113" width="261" height="256" rx="18"/>
+  </g>
+  <g fill="#524439">
+    <rect x="118" y="139" width="207" height="135" rx="12"/><rect x="475" y="139" width="207" height="135" rx="12"/>
+  </g>
+  <rect x="160" y="166" width="122" height="70" rx="7" fill="#2b2520" stroke="#ad9278" stroke-width="4"/>
+  <path d="M147 243h148l-12 10H159z" fill="#ad9278"/>
+  <path d="M169 207l32-16 22 10 34-17 16 12v34H169z" fill="#876c54"/>
+  <rect x="533" y="171" width="92" height="70" rx="8" fill="#c4a37f"/>
+  <path d="M566 171v-8a7 7 0 0 1 7-7h12a7 7 0 0 1 7 7v8m-59 28h92" fill="none" stroke="#b39476" stroke-width="5"/>
+  <rect x="571" y="194" width="15" height="12" rx="3" fill="#6c5647"/>
+  <path d="M119 303h142m-142 24h107m249-24h148m-148 24h107" stroke="#a18a74" stroke-width="8" stroke-linecap="round"/>
+  <circle cx="400" cy="234" r="66" fill="#453a30" stroke="#776351" stroke-width="2"/>
+  <g fill="none" stroke="#dbbd94" stroke-width="7" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M370 221h60m-13-13 13 13-13 13"/>
+    <path d="M430 249h-60m13-13-13 13 13 13"/>
+  </g>
+</svg>

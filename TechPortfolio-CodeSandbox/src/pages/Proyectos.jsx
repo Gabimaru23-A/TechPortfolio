@@ -1,62 +1,107 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
+import { useLocation, useNavigate, useSearchParams } from 'react-router-dom';
 import PageHeading from '../components/PageHeading.jsx';
+import Pagination from '../components/Pagination.jsx';
 import ProjectCard from '../components/ProjectCard.jsx';
 import ProjectFilters from '../components/ProjectFilters.jsx';
 import ProjectSidebar from '../components/ProjectSidebar.jsx';
-import Pagination from '../components/Pagination.jsx';
-import { filtrarProyectos, paginar } from '../utils/logic.js';
+import { usePortfolio } from '../context/PortfolioContext.jsx';
+import { filtrarProyectos, paginar, TAMANO_PAGINA } from '../utils/logic.js';
 
 export default function Proyectos() {
-  const [catalogo, setCatalogo] = useState([]);
-  const [cargando, setCargando] = useState(true);
-  const [error, setError] = useState('');
-  const [filtros, setFiltros] = useState({cat: 'Todas', tech: ''});
+  const { catalogo, cargando, error, reintentar } = usePortfolio();
+  const [parametros, setParametros] = useSearchParams();
+  const { state } = useLocation();
+  const navegar = useNavigate();
+  const [filtros, setFiltros] = useState({ cat: 'Todas', tech: '' });
   const [pagina, setPagina] = useState(1);
   const tituloResultados = useRef(null);
+  const ultimoDetalle = useRef(null);
+
+  const idProyecto = parametros.get('proyecto');
+  const proyectoSeleccionado = catalogo.find(proyecto => proyecto.id === idProyecto);
+  const idSeleccionado = proyectoSeleccionado?.id;
+  const categorias = ['Todas', ...new Set(catalogo.map(proyecto => proyecto.categoria))];
+  const resultados = filtrarProyectos(catalogo, filtros);
+  const indiceSeleccionado = resultados.findIndex(proyecto => proyecto.id === idSeleccionado);
+  const paginaDelDetalle = indiceSeleccionado === -1 ? null : Math.floor(indiceSeleccionado / TAMANO_PAGINA) + 1;
+  const { totalPages, visibles, paginaActual } = paginar(resultados, paginaDelDetalle ?? pagina);
 
   useEffect(() => {
-    const controlador = new AbortController();
-    fetch(`${import.meta.env.BASE_URL}data/proyectos.json`, {signal: controlador.signal})
-      .then(respuesta => {
-        if (!respuesta.ok) throw new Error('No se pudo obtener el catálogo.');
-        return respuesta.json();
-      })
-      .then(datos => {
-        if (!Array.isArray(datos)) throw new Error('El catálogo no tiene un formato válido.');
-        setCatalogo(datos);
-      })
-      .catch(err => { if (err.name !== 'AbortError') setError(err.message); })
-      .finally(() => { if (!controlador.signal.aborted) setCargando(false); });
-    return () => controlador.abort();
-  }, []);
+    if (idSeleccionado) {
+      ultimoDetalle.current = idSeleccionado;
+      if (paginaDelDetalle) setPagina(paginaDelDetalle);
+    } else if (ultimoDetalle.current) {
+      const activador = document.getElementById(`detalle-${ultimoDetalle.current}`);
+      (activador || tituloResultados.current)?.focus();
+      ultimoDetalle.current = null;
+    }
+  }, [idSeleccionado, paginaDelDetalle]);
 
-  const categorias = useMemo(() => ['Todas', ...new Set(catalogo.map(p => p.categoria))], [catalogo]);
-  const resultados = useMemo(() => filtrarProyectos(catalogo, filtros), [catalogo, filtros]);
-  const {totalPages, visibles, paginaActual} = paginar(resultados, pagina, 10);
+  function aplicarFiltros(nuevosFiltros) {
+    setFiltros(nuevosFiltros);
+    setPagina(1);
+  }
 
-  function aplicar(nuevos) { setFiltros(nuevos); setPagina(1); }
-  function cambiar(numero) {
+  function cambiarPagina(numero) {
     setPagina(numero);
-    // El foco permanece en la navegación sin provocar un salto imprevisto.
-    tituloResultados.current?.scrollIntoView({behavior:'smooth',block:'start'});
+    tituloResultados.current?.focus();
+  }
+
+  function abrirDetalle(proyecto) {
+    const nuevosParametros = new URLSearchParams(parametros);
+    nuevosParametros.set('proyecto', proyecto.id);
+    setParametros(nuevosParametros, { state: { detalleDesdeCatalogo: proyecto.id } });
+  }
+
+  function cerrarDetalle() {
+    if (state?.detalleDesdeCatalogo === idProyecto) {
+      navegar(-1);
+      return;
+    }
+
+    const nuevosParametros = new URLSearchParams(parametros);
+    nuevosParametros.delete('proyecto');
+    setParametros(nuevosParametros, { replace: true });
   }
 
   return (
     <section className="container section page">
-      <PageHeading label="PORTAFOLIO / PROYECTOS" title="Soluciones que" emphasis="resuelven">
-        Catálogo de soluciones TI con filtros combinables, paginación y detalles técnicos de cada proyecto.
+      <PageHeading title="Catálogo de" emphasis="proyectos">
+        Explora soluciones de desarrollo web, soporte y calidad de software. Las propuestas conceptuales describen aplicaciones posibles.
       </PageHeading>
-      <ProjectFilters categorias={categorias} alAplicar={aplicar}/>
-      <div className="section-row" ref={tituloResultados}>
-        <div><h2>Listado de proyectos</h2><p>Explora las propuestas tecnológicas organizadas por categoría.</p></div>
-        <span className="count">{resultados.length} resultados</span>
-      </div>
-      {cargando && <p className="empty" role="status">Cargando catálogo...</p>}
-      {error && <p className="empty" role="alert">{error}</p>}
-      {!cargando && !error && resultados.length === 0 && <p className="empty" role="status">No se encontraron proyectos con esos filtros.</p>}
-      {!cargando && !error && <div className="projects-grid">{visibles.map(proyecto => <ProjectCard key={proyecto.id} proyecto={proyecto}/>)}</div>}
-      {!cargando && !error && <Pagination pagina={paginaActual} total={totalPages} cambiar={cambiar}/>}
-      <ProjectSidebar />
+      {cargando && <p className="empty" role="status">Cargando catálogo…</p>}
+      {error && (
+        <div className="empty catalog-status">
+          <p role="alert">{error}</p>
+          <button className="btn blue" type="button" onClick={reintentar}>Reintentar</button>
+        </div>
+      )}
+      {!cargando && !error && (
+        <>
+          {idProyecto && !proyectoSeleccionado && (
+            <p className="empty" role="status">La ficha solicitada no está disponible en el catálogo.</p>
+          )}
+          <ProjectFilters categorias={categorias} alAplicar={aplicarFiltros} />
+          <div className="section-row">
+            <h2 ref={tituloResultados} tabIndex={-1}>Proyectos disponibles</h2>
+            <span className="count" role="status">
+              {resultados.length} {resultados.length === 1 ? 'resultado' : 'resultados'}
+            </span>
+          </div>
+          {resultados.length === 0 ? (
+            <p className="empty" role="status">No se encontraron proyectos con esos filtros.</p>
+          ) : (
+            <div className="projects-grid">
+              {visibles.map(proyecto => (
+                <ProjectCard key={proyecto.id} proyecto={proyecto} alAbrir={abrirDetalle} />
+              ))}
+            </div>
+          )}
+          <Pagination pagina={paginaActual} total={totalPages} cambiar={cambiarPagina} />
+        </>
+      )}
+      <ProjectSidebar proyecto={proyectoSeleccionado} alCerrar={cerrarDetalle} />
     </section>
   );
 }

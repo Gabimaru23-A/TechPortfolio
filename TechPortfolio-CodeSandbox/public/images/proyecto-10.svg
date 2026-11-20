@@ -1,14 +1,35 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 480">
-      <defs><linearGradient id="g" x2="1" y2="1"><stop stop-color="#263656"/><stop offset="1" stop-color="#6887b3"/></linearGradient></defs>
-      <rect width="800" height="480" rx="28" fill="url(#g)"/>
-      <circle cx="660" cy="90" r="180" fill="#fff" opacity=".06"/><circle cx="650" cy="380" r="110" fill="#fff" opacity=".07"/>
-      <rect x="105" y="100" width="590" height="260" rx="17" fill="#fff" fill-opacity=".13" stroke="#fff" stroke-opacity=".26" stroke-width="2"/>
-      <rect x="130" y="126" width="540" height="35" rx="7" fill="#fff" fill-opacity=".15"/>
-      <circle cx="151" cy="143" r="6" fill="#9ff3e2"/><circle cx="171" cy="143" r="6" fill="#fff" opacity=".7"/>
-      <text x="630" y="151" fill="#fff" font-family="Arial,sans-serif" font-size="16" text-anchor="end">TP-10</text>
-      <rect x="135" y="198" width="90" height="89" rx="15" fill="#92e3d8" opacity=".91"/>
-      <path d="M156 241h47m-37-14h27m-27 28h27" fill="none" stroke="#263656" stroke-width="6" stroke-linecap="round"/>
-      <text x="250" y="226" fill="#fff" font-family="Arial,sans-serif" font-weight="bold" font-size="27">Checklist de pruebas</text>
-      <text x="250" y="260" fill="#c6f4ec" font-family="Arial,sans-serif" font-size="20">Calidad de software</text>
-      <text x="400" y="416" fill="#eafefd" font-family="Arial,sans-serif" font-size="23" font-weight="bold" text-anchor="middle">TechPortfolio</text>
-    </svg>
+  <title>Lista de verificación con resultados de pruebas</title>
+  <defs>
+    <linearGradient id="fondo" x2="100%" y2="100%">
+      <stop stop-color="#28332b"/>
+      <stop offset="1" stop-color="#1a211b"/>
+    </linearGradient>
+    <radialGradient id="luz" cx="50%" cy="48%" r="54%">
+      <stop stop-color="#bdcf9d" stop-opacity=".15"/>
+      <stop offset="1" stop-color="#bdcf9d" stop-opacity="0"/>
+    </radialGradient>
+    <pattern id="puntos" width="25" height="25" patternUnits="userSpaceOnUse">
+      <circle cx="13" cy="13" r="1" fill="#bdcf9d" fill-opacity=".16"/>
+    </pattern>
+  </defs>
+  <rect width="800" height="480" fill="url(#fondo)"/>
+  <rect width="800" height="480" fill="url(#luz)"/>
+  <rect x="40" y="35" width="720" height="410" rx="28" fill="url(#puntos)"/>
+  <rect x="179" y="127" width="355" height="256" rx="18" fill="#374737" stroke="#647660" stroke-width="2" transform="rotate(-8 356 255)"/>
+  <rect x="235" y="107" width="371" height="281" rx="18" fill="#293629" stroke="#71826a" stroke-width="2"/>
+  <rect x="344" y="84" width="153" height="43" rx="12" fill="#7a8e70"/>
+  <path d="M370 106h101" stroke="#ccd7c2" stroke-width="7" stroke-linecap="round"/>
+  <path d="M264 198h310m-310 56h310m-310 56h310" stroke="#465b46" stroke-width="2"/>
+  <g fill="#bdcf9d">
+    <circle cx="290" cy="167" r="14"/><circle cx="290" cy="223" r="14"/><circle cx="290" cy="279" r="14"/>
+  </g>
+  <g fill="none" stroke="#324532" stroke-width="4" stroke-linecap="round" stroke-linejoin="round">
+    <path d="m283 167 5 5 9-10M283 223l5 5 9-10M283 279l5 5 9-10"/>
+  </g>
+  <circle cx="290" cy="335" r="13" fill="none" stroke="#84977d" stroke-width="2"/>
+  <path d="M319 167h182m-182 56h146m-146 56h167m-167 56h116" stroke="#97a88f" stroke-width="8" stroke-linecap="round"/>
+  <g fill="#526a50">
+    <rect x="537" y="157" width="38" height="20" rx="8"/><rect x="537" y="213" width="38" height="20" rx="8"/><rect x="537" y="269" width="38" height="20" rx="8"/>
+  </g>
+</svg>

@@ -1,14 +1,30 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 480">
-      <defs><linearGradient id="g" x2="1" y2="1"><stop stop-color="#273d59"/><stop offset="1" stop-color="#2d8691"/></linearGradient></defs>
-      <rect width="800" height="480" rx="28" fill="url(#g)"/>
-      <circle cx="660" cy="90" r="180" fill="#fff" opacity=".06"/><circle cx="650" cy="380" r="110" fill="#fff" opacity=".07"/>
-      <rect x="105" y="100" width="590" height="260" rx="17" fill="#fff" fill-opacity=".13" stroke="#fff" stroke-opacity=".26" stroke-width="2"/>
-      <rect x="130" y="126" width="540" height="35" rx="7" fill="#fff" fill-opacity=".15"/>
-      <circle cx="151" cy="143" r="6" fill="#9ff3e2"/><circle cx="171" cy="143" r="6" fill="#fff" opacity=".7"/>
-      <text x="630" y="151" fill="#fff" font-family="Arial,sans-serif" font-size="16" text-anchor="end">TP-08</text>
-      <rect x="135" y="198" width="90" height="89" rx="15" fill="#92e3d8" opacity=".91"/>
-      <path d="M156 241h47m-37-14h27m-27 28h27" fill="none" stroke="#273d59" stroke-width="6" stroke-linecap="round"/>
-      <text x="250" y="226" fill="#fff" font-family="Arial,sans-serif" font-weight="bold" font-size="27">Registro de mantenimiento</text>
-      <text x="250" y="260" fill="#c6f4ec" font-family="Arial,sans-serif" font-size="20">Soporte TI</text>
-      <text x="400" y="416" fill="#eafefd" font-family="Arial,sans-serif" font-size="23" font-weight="bold" text-anchor="middle">TechPortfolio</text>
-    </svg>
+  <title>Calendario de tareas de mantenimiento de equipos</title>
+  <defs>
+    <linearGradient id="fondo" x2="100%" y2="100%">
+      <stop stop-color="#23332e"/>
+      <stop offset="1" stop-color="#182321"/>
+    </linearGradient>
+    <radialGradient id="luz" cx="50%" cy="48%" r="54%">
+      <stop stop-color="#9acfb0" stop-opacity=".15"/>
+      <stop offset="1" stop-color="#9acfb0" stop-opacity="0"/>
+    </radialGradient>
+    <pattern id="puntos" width="25" height="25" patternUnits="userSpaceOnUse">
+      <circle cx="13" cy="13" r="1" fill="#9acfb0" fill-opacity=".16"/>
+    </pattern>
+  </defs>
+  <rect width="800" height="480" fill="url(#fondo)"/>
+  <rect width="800" height="480" fill="url(#luz)"/>
+  <rect x="40" y="35" width="720" height="410" rx="28" fill="url(#puntos)"/>
+  <rect x="121" y="111" width="497" height="265" rx="19" fill="#263831" stroke="#5a7466" stroke-width="2"/>
+  <path d="M121 130a19 19 0 0 1 19-19h459a19 19 0 0 1 19 19v44H121z" fill="#394f43"/>
+  <path d="M192 95v35m355-35v35" stroke="#b4d4bd" stroke-width="10" stroke-linecap="round"/>
+  <path d="M148 153h103" stroke="#9acfb0" stroke-width="7" stroke-linecap="round"/>
+  <path d="M150 199h439m-439 44h439m-439 44h439m-439 44h439M166 188v154m68-154v154m68-154v154m68-154v154m68-154v154m68-154v154m68-154v154" stroke="#537363" stroke-width="2"/>
+  <g fill="#9acfb0">
+    <circle cx="200" cy="220" r="10"/><circle cx="335" cy="266" r="10"/><circle cx="472" cy="309" r="10"/>
+  </g>
+  <circle cx="589" cy="314" r="81" fill="#2d443a" stroke="#789f8a" stroke-width="2"/>
+  <path d="M564 300a25 25 0 0 1 28-33l-15 15 4 15 15 4 15-15a25 25 0 0 1-32 28l-24 35a9 9 0 1 1-13-12l27-27z" fill="#9acfb0"/>
+  <circle cx="548" cy="342" r="4" fill="#2d443a"/>
+</svg>

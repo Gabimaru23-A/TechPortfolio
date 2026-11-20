@@ -1,42 +1,64 @@
-// Datos de contenido para completar el portafolio. El perfil y las referencias
-// laborales incluidas son FICTICIAS y NO acreditan experiencias del autor.
-// Se centralizan aquí para poder reemplazarlos sin tocar las vistas React.
+// Contenido del perfil de demostración y enlaces públicos.
+function enlaceLinkedIn(valor) {
+  if (!valor) return '';
+
+  try {
+    const url = new URL(valor);
+    const dominio = url.hostname === 'linkedin.com' || url.hostname.endsWith('.linkedin.com');
+    const esPerfil = /^\/in\/[^/]+\/?$/.test(url.pathname);
+    return url.protocol === 'https:' && dominio && esPerfil && !url.username && !url.password && !url.port
+      ? url.href
+      : '';
+  } catch {
+    return '';
+  }
+}
+
 export const perfil = {
   nombre: 'Alex Rivera',
   rol: 'Desarrollador de interfaces y soluciones TI',
   carrera: 'Tecnología en Sistemas de Información',
   institucion: 'Institución Universitaria Antonio José Camacho',
-  presentacion: 'Diseño interfaces web y organizo soluciones tecnológicas que convierten tareas complejas en experiencias claras.',
-  biografia: 'Profesional de ejemplo con interés en desarrollo frontend, soporte tecnológico, documentación y mejora de procesos.',
+  biografia: 'Perfil de demostración orientado a convertir registros dispersos y procesos manuales en interfaces que faciliten el trabajo diario.',
   github: 'https://github.com/Gabimaru23-A/TechPortfolio',
-  // Abre la red social, no un perfil individual. Sustituir por un perfil real.
-  linkedin: 'https://www.linkedin.com/',
-  // Define un destinatario real antes de enviar correos: no se publica ningún correo personal por defecto.
+  linkedin: enlaceLinkedIn(import.meta.env?.VITE_LINKEDIN_URL),
   email: '',
   avatar: 'images/avatar.svg'
 };
 
 export const biografia = [
-  { numero: '01', titulo: 'Formación tecnológica', texto: 'Sistemas de información, fundamentos de programación y construcción de interfaces web.' },
-  { numero: '02', titulo: 'Soluciones empresariales', texto: 'Interés por herramientas de inventario, soporte y gestión de información digital.' },
-  { numero: '03', titulo: 'Aprendizaje y calidad', texto: 'Organización de código, validación de formularios y mejora continua de la experiencia de usuario.' }
+  { titulo: 'Formación tecnológica', texto: 'Interés en sistemas de información, programación e interfaces web.' },
+  { titulo: 'Soluciones empresariales', texto: 'Exploración de herramientas para organizar inventarios, registrar solicitudes y consultar información digital.' },
+  { titulo: 'Aprendizaje y calidad', texto: 'Práctica en documentación, validación de formularios y revisión de flujos con teclado y en pantallas pequeñas.' }
 ];
 
 export const tecnologias = [
-  { nombre: 'React', imagen: 'icons/react.svg', descripcion: 'Componentes, propiedades, estados y efectos para desarrollar interfaces dinámicas.' },
-  { nombre: 'JavaScript', imagen: 'icons/javascript.svg', descripcion: 'Lógica, arreglos, objetos, eventos, Promesas y validación de información.' },
-  { nombre: 'CSS', imagen: 'icons/css.svg', descripcion: 'Diseño responsivo, sistemas de cuadrículas, accesibilidad y estilos reutilizables.' }
+  {
+    nombre: 'React',
+    imagen: 'icons/react.svg',
+    descripcion: 'Comparte los datos del catálogo entre Inicio y Proyectos y actualiza las tarjetas cuando cambian los filtros o la página activa.'
+  },
+  {
+    nombre: 'JavaScript',
+    imagen: 'icons/javascript.svg',
+    descripcion: 'Carga las fichas desde un archivo JSON, combina los filtros del catálogo y valida cada campo antes de preparar el borrador de contacto.'
+  },
+  {
+    nombre: 'CSS',
+    imagen: 'icons/css.svg',
+    descripcion: 'Adapta las cuadrículas y el menú al ancho disponible, da estilo a los estados de error y hace visible el foco de teclado.'
+  }
 ];
 
 export const herramientasIA = [
-  { nombre: 'ChatGPT', descripcion: 'Análisis de requisitos, arquitectura y revisión de las funcionalidades.' },
-  { nombre: 'Codex', descripcion: 'Asistencia para programación, refactorización y pruebas del proyecto.' }
+  { nombre: 'ChatGPT', descripcion: 'Apoyo para desglosar los requisitos de las cinco vistas y redactar escenarios de uso del catálogo y el formulario.' },
+  { nombre: 'Codex', descripcion: 'Apoyo en la revisión de componentes, la corrección de validaciones y la ejecución de pruebas del proyecto.' }
 ];
 
 export const experiencias = [
-  { id: 1, cargo: 'Auxiliar de soporte TI', empresa: 'NovaTec Soluciones (ficticia)', periodo: 'Ene 2024 – Jun 2024', descripcion: 'Atención de requerimientos, inventario de equipos y documentación de incidencias.' },
-  { id: 2, cargo: 'Practicante de desarrollo web', empresa: 'Ágora Digital (ficticia)', periodo: 'Jul 2024 – Dic 2024', descripcion: 'Creación de componentes React y ajustes de estilos en interfaces corporativas.' },
-  { id: 3, cargo: 'Asistente de calidad de software', empresa: 'Prisma QA (ficticia)', periodo: 'Ene 2025 – Jun 2025', descripcion: 'Elaboración de casos de prueba, validación de formularios y registro de hallazgos.' }
+  { id: 1, cargo: 'Auxiliar de soporte TI', empresa: 'NovaTec Soluciones (ficticia)', periodo: 'Ene 2024 – Jun 2024', descripcion: 'Clasificación de solicitudes de soporte, actualización del inventario de equipos y registro de incidencias.' },
+  { id: 2, cargo: 'Practicante de desarrollo web', empresa: 'Ágora Digital (ficticia)', periodo: 'Jul 2024 – Dic 2024', descripcion: 'Creación de tarjetas y formularios en React, con ajustes para pantallas pequeñas y navegación por teclado.' },
+  { id: 3, cargo: 'Asistente de calidad de software', empresa: 'Prisma QA (ficticia)', periodo: 'Ene 2025 – Jun 2025', descripcion: 'Preparación de casos de prueba para formularios y documentación de errores con sus pasos de reproducción.' }
 ];
 
 export const testimonios = [

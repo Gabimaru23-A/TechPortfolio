@@ -31,8 +31,10 @@ test('están presentes las tres tecnologías con imagen, dos IA y tres experienc
   assert.ok(biografia.length>=3);
 });
 
-test('el contacto tiene cinco testimonios y los vínculos de dos redes',()=>{
+test('el contacto tiene cinco testimonios y las redes usan destinos verificados o configuración explícita',()=>{
   assert.ok(testimonios.length>=5);
-  assert.ok(perfil.github.startsWith('https://github.com/'));
-  assert.ok(perfil.linkedin.startsWith('https://www.linkedin.com/'));
+  assert.equal(perfil.github, 'https://github.com/Gabimaru23-A/TechPortfolio');
+  assert.equal(perfil.linkedin, '');
+  const config = readFileSync(join(root, '.env.example'), 'utf8');
+  assert.match(config, /^VITE_LINKEDIN_URL=$/m);
 });

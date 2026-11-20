@@ -4,11 +4,12 @@
     "nombre": "TechPortfolio — Portafolio React",
     "categoria": "Desarrollo web",
     "tecnologia": "React",
-    "estado": "Diseño",
+    "estado": "Implementado",
     "fecha": "2026-11-01",
-    "descripcion": "Aplicación académica para presentar un perfil profesional y explorar proyectos usando React, filtros, paginación, panel lateral y formulario. Este es el proyecto actual.",
+    "conceptual": false,
+    "descripcion": "Un perfil y varios proyectos dispersos dificultan revisar un portafolio. Esta aplicación React los reúne en un catálogo filtrable con fichas técnicas y una vía de contacto.",
     "imagen": "images/proyecto-01.svg",
-    "enlace": null
+    "enlace": "https://github.com/Gabimaru23-A/TechPortfolio"
   },
   {
     "id": "TP-002",
@@ -17,7 +18,8 @@
     "tecnologia": "JavaScript",
     "estado": "Propuesta",
     "fecha": "2026-11-02",
-    "descripcion": "Ejemplo ficticio TP-002 de gestión de usuarios. Ficha de demostración creada para comprobar tarjetas, filtros, paginación y detalle; no es un software desarrollado.",
+    "conceptual": true,
+    "descripcion": "Cuando los datos de usuarios quedan repartidos en varias listas, un directorio con roles y estados permite localizar cuentas y revisar qué accesos necesitan atención.",
     "imagen": "images/proyecto-02.svg",
     "enlace": null
   },
@@ -28,7 +30,8 @@
     "tecnologia": "React",
     "estado": "Propuesta",
     "fecha": "2026-11-03",
-    "descripcion": "Ejemplo ficticio TP-003 de mesa de ayuda. Ficha de demostración creada para comprobar tarjetas, filtros, paginación y detalle; no es un software desarrollado.",
+    "conceptual": true,
+    "descripcion": "Una cola de tickets reúne solicitudes que llegan por distintos canales. Clasificarlas por prioridad y responsable ayuda al equipo de soporte a decidir qué atender primero.",
     "imagen": "images/proyecto-03.svg",
     "enlace": null
   },
@@ -39,7 +42,8 @@
     "tecnologia": "HTML y CSS",
     "estado": "Diseño",
     "fecha": "2026-11-04",
-    "descripcion": "Ejemplo ficticio TP-004 de sitio corporativo. Ficha de demostración creada para comprobar tarjetas, filtros, paginación y detalle; no es un software desarrollado.",
+    "conceptual": true,
+    "descripcion": "Un sitio adaptable agrupa servicios, preguntas frecuentes y vías de contacto que suelen estar dispersos, para que un visitante encuentre cómo hacer una consulta desde su teléfono.",
     "imagen": "images/proyecto-04.svg",
     "enlace": null
   },
@@ -50,7 +54,8 @@
     "tecnologia": "JavaScript",
     "estado": "Propuesta",
     "fecha": "2026-11-05",
-    "descripcion": "Ejemplo ficticio TP-005 de registro de incidencias. Ficha de demostración creada para comprobar tarjetas, filtros, paginación y detalle; no es un software desarrollado.",
+    "conceptual": true,
+    "descripcion": "Una falla recurrente es difícil de diagnosticar si cada caso se anota de forma distinta. Una ficha con síntomas, entorno y resolución facilita consultar antecedentes.",
     "imagen": "images/proyecto-05.svg",
     "enlace": null
   },
@@ -61,7 +66,8 @@
     "tecnologia": "React",
     "estado": "Propuesta",
     "fecha": "2026-11-06",
-    "descripcion": "Ejemplo ficticio TP-006 de panel de indicadores. Ficha de demostración creada para comprobar tarjetas, filtros, paginación y detalle; no es un software desarrollado.",
+    "conceptual": true,
+    "descripcion": "Comparar el trabajo de varios periodos exige revisar planillas separadas. Un panel con gráficos y filtros de fecha permite ver el volumen de tareas y detectar cambios.",
     "imagen": "images/proyecto-06.svg",
     "enlace": null
   },
@@ -72,7 +78,8 @@
     "tecnologia": "JavaScript",
     "estado": "Diseño",
     "fecha": "2026-11-07",
-    "descripcion": "Ejemplo ficticio TP-007 de documentación qa. Ficha de demostración creada para comprobar tarjetas, filtros, paginación y detalle; no es un software desarrollado.",
+    "conceptual": true,
+    "descripcion": "Una matriz enlaza requisitos, casos de prueba y evidencias cuando se pierde el rastro entre documentos. Así, cada persona puede repetir una comprobación y revisar su resultado.",
     "imagen": "images/proyecto-07.svg",
     "enlace": null
   },
@@ -83,7 +90,8 @@
     "tecnologia": "HTML y CSS",
     "estado": "Propuesta",
     "fecha": "2026-11-08",
-    "descripcion": "Ejemplo ficticio TP-008 de registro de mantenimiento. Ficha de demostración creada para comprobar tarjetas, filtros, paginación y detalle; no es un software desarrollado.",
+    "conceptual": true,
+    "descripcion": "Las revisiones de equipos se pueden pasar por alto cuando el historial está disperso. Una bitácora por equipo reúne intervenciones y fechas para programar la próxima revisión.",
     "imagen": "images/proyecto-08.svg",
     "enlace": null
   },
@@ -94,7 +102,8 @@
     "tecnologia": "React",
     "estado": "Propuesta",
     "fecha": "2026-11-09",
-    "descripcion": "Ejemplo ficticio TP-009 de control de préstamos. Ficha de demostración creada para comprobar tarjetas, filtros, paginación y detalle; no es un software desarrollado.",
+    "conceptual": true,
+    "descripcion": "Para evitar confusiones sobre la disponibilidad de equipos compartidos, un registro vincula cada entrega con su responsable y la fecha de devolución.",
     "imagen": "images/proyecto-09.svg",
     "enlace": null
   },
@@ -105,7 +114,8 @@
     "tecnologia": "JavaScript",
     "estado": "Diseño",
     "fecha": "2026-11-10",
-    "descripcion": "Ejemplo ficticio TP-010 de checklist de pruebas. Ficha de demostración creada para comprobar tarjetas, filtros, paginación y detalle; no es un software desarrollado.",
+    "conceptual": true,
+    "descripcion": "Antes de publicar una versión suelen quedar verificaciones pendientes. Una lista de comprobación por funcionalidad permite registrar qué se revisó y qué falta repetir.",
     "imagen": "images/proyecto-10.svg",
     "enlace": null
   },
@@ -116,7 +126,8 @@
     "tecnologia": "React",
     "estado": "Propuesta",
     "fecha": "2026-11-11",
-    "descripcion": "Ejemplo ficticio TP-011 de catálogo de productos. Ficha de demostración creada para comprobar tarjetas, filtros, paginación y detalle; no es un software desarrollado.",
+    "conceptual": true,
+    "descripcion": "Las fichas de productos con especificaciones dispares hacen difícil compararlos. Este catálogo propone agruparlos por categoría y mostrar los mismos datos técnicos en cada ficha.",
     "imagen": "images/proyecto-11.svg",
     "enlace": null
   },
@@ -127,7 +138,8 @@
     "tecnologia": "JavaScript",
     "estado": "Propuesta",
     "fecha": "2026-11-12",
-    "descripcion": "Ejemplo ficticio TP-012 de dispositivos de red. Ficha de demostración creada para comprobar tarjetas, filtros, paginación y detalle; no es un software desarrollado.",
+    "conceptual": true,
+    "descripcion": "Al diagnosticar cortes de conectividad, localizar un dispositivo en varias listas retrasa la revisión. Un inventario por ubicación y tipo reúne sus datos para encontrarlo.",
     "imagen": "images/proyecto-12.svg",
     "enlace": null
   }

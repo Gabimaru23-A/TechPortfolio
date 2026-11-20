@@ -1,14 +1,39 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 480">
-      <defs><linearGradient id="g" x2="1" y2="1"><stop stop-color="#193e66"/><stop offset="1" stop-color="#2d8f9a"/></linearGradient></defs>
-      <rect width="800" height="480" rx="28" fill="url(#g)"/>
-      <circle cx="660" cy="90" r="180" fill="#fff" opacity=".06"/><circle cx="650" cy="380" r="110" fill="#fff" opacity=".07"/>
-      <rect x="105" y="100" width="590" height="260" rx="17" fill="#fff" fill-opacity=".13" stroke="#fff" stroke-opacity=".26" stroke-width="2"/>
-      <rect x="130" y="126" width="540" height="35" rx="7" fill="#fff" fill-opacity=".15"/>
-      <circle cx="151" cy="143" r="6" fill="#9ff3e2"/><circle cx="171" cy="143" r="6" fill="#fff" opacity=".7"/>
-      <text x="630" y="151" fill="#fff" font-family="Arial,sans-serif" font-size="16" text-anchor="end">TP-02</text>
-      <rect x="135" y="198" width="90" height="89" rx="15" fill="#92e3d8" opacity=".91"/>
-      <path d="M156 241h47m-37-14h27m-27 28h27" fill="none" stroke="#193e66" stroke-width="6" stroke-linecap="round"/>
-      <text x="250" y="226" fill="#fff" font-family="Arial,sans-serif" font-weight="bold" font-size="27">Gestión de usuarios</text>
-      <text x="250" y="260" fill="#c6f4ec" font-family="Arial,sans-serif" font-size="20">Desarrollo web</text>
-      <text x="400" y="416" fill="#eafefd" font-family="Arial,sans-serif" font-size="23" font-weight="bold" text-anchor="middle">TechPortfolio</text>
-    </svg>
+  <title>Directorio de usuarios con roles y permisos</title>
+  <defs>
+    <linearGradient id="fondo" x2="100%" y2="100%">
+      <stop stop-color="#27312a"/>
+      <stop offset="1" stop-color="#161c18"/>
+    </linearGradient>
+    <radialGradient id="luz" cx="50%" cy="48%" r="54%">
+      <stop stop-color="#afd9a1" stop-opacity=".15"/>
+      <stop offset="1" stop-color="#afd9a1" stop-opacity="0"/>
+    </radialGradient>
+    <pattern id="puntos" width="25" height="25" patternUnits="userSpaceOnUse">
+      <circle cx="13" cy="13" r="1" fill="#afd9a1" fill-opacity=".16"/>
+    </pattern>
+  </defs>
+  <rect width="800" height="480" fill="url(#fondo)"/>
+  <rect width="800" height="480" fill="url(#luz)"/>
+  <rect x="40" y="35" width="720" height="410" rx="28" fill="url(#puntos)"/>
+  <rect x="116" y="95" width="540" height="292" rx="21" fill="#1b241e" stroke="#57675c" stroke-width="2"/>
+  <path d="M116 117a22 22 0 0 1 22-22h94v292h-94a22 22 0 0 1-22-22z" fill="#29362d"/>
+  <g fill="#788d7b">
+    <rect x="138" y="144" width="64" height="8" rx="4"/><rect x="138" y="275" width="61" height="8" rx="4"/>
+    <rect x="138" y="301" width="50" height="8" rx="4"/><rect x="138" y="327" width="55" height="8" rx="4"/>
+  </g>
+  <rect x="138" y="188" width="72" height="34" rx="9" fill="#526b52"/>
+  <path d="M156 205h33" stroke="#c0deb7" stroke-width="6" stroke-linecap="round"/>
+  <g stroke="#425348" stroke-width="2" fill="#263329">
+    <rect x="255" y="140" width="327" height="58" rx="10"/>
+    <rect x="255" y="215" width="327" height="58" rx="10"/>
+    <rect x="255" y="290" width="327" height="58" rx="10"/>
+  </g>
+  <g fill="#7d9f7f">
+    <circle cx="286" cy="169" r="15"/><circle cx="286" cy="244" r="15"/><circle cx="286" cy="319" r="15"/>
+  </g>
+  <path d="M316 169h100m-100 75h91m-91 75h108" stroke="#9eb0a0" stroke-width="8" stroke-linecap="round"/>
+  <rect x="510" y="209" width="165" height="158" rx="20" fill="#344637" stroke="#69826b" stroke-width="2"/>
+  <path d="M592 239c15 11 26 14 38 17v30c0 22-14 37-38 51-24-14-38-29-38-51v-30c12-3 23-6 38-17z" fill="#afd9a1"/>
+  <path d="m576 287 10 10 21-24" fill="none" stroke="#263b2a" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>

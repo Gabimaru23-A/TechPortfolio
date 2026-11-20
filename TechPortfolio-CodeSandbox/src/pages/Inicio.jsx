@@ -1,65 +1,115 @@
-import { ArrowRight, Braces, Github, Layers3, Linkedin, Route, ShieldCheck } from 'lucide-react';
 import { Link } from 'react-router-dom';
-import { perfil, biografia } from '../data/site.js';
+import { SocialLinks } from '../components/Layout.jsx';
+import { usePortfolio } from '../context/PortfolioContext.jsx';
+import { biografia, perfil, tecnologias } from '../data/site.js';
+
+const destacados = ['TP-001', 'TP-003', 'TP-006'];
+const base = import.meta.env.BASE_URL;
 
 export default function Inicio() {
+  const { catalogo, cargando, error, reintentar } = usePortfolio();
+  const proyectos = destacados
+    .map(id => catalogo.find(proyecto => proyecto.id === id))
+    .filter(Boolean);
+
   return (
     <>
-      <section className="hero">
+      <section className="hero" aria-labelledby="titulo-inicio">
         <div className="container hero-layout">
           <div className="hero-copy">
-            <span className="hero-kicker"><span className="signal-dot"/> PROYECTO ACADÉMICO · SOLUCIONES TI</span>
-            <h1>Ideas digitales.<br/>Soluciones con <span className="hero-gradient">estructura y propósito.</span></h1>
-            <p>{perfil.presentacion} Este portafolio reúne una aplicación React y propuestas conceptuales presentadas con claridad.</p>
+            <p className="eyebrow">Portafolio de soluciones TI</p>
+            <h1 id="titulo-inicio">Interfaces para <em>resolver</em> tareas reales.</h1>
+            <p className="hero-description">
+              Desarrollo frontend y organización de información para que las personas puedan
+              consultar, gestionar y compartir datos desde la web.
+            </p>
             <div className="actions">
-              <Link className="btn mint" to="/proyectos">Explorar proyectos <ArrowRight size={17}/></Link>
-              <Link className="btn glass" to="/contacto">Hablemos de tu idea <ArrowRight size={17}/></Link>
-            </div>
-            <div className="hero-facts" aria-label="Resumen del portafolio">
-              <div><small>APLICACIÓN</small><strong>React + JavaScript</strong></div>
-              <div><small>CONTENIDO</small><strong>5 vistas conectadas</strong></div>
-              <div><small>CATÁLOGO</small><strong>12 fichas de proyecto</strong></div>
+              <Link className="btn primary" to="/proyectos">Ver proyectos</Link>
+              <Link className="btn secondary" to="/contacto">Contactar</Link>
             </div>
           </div>
-          <div className="hero-overview">
-            <div className="hero-profile">
-              <div className="hero-profile-main">
-                <img src={`${import.meta.env.BASE_URL}${perfil.avatar}`} alt="" />
-                <div><span className="profile-label">PERFIL DE EJEMPLO</span><h2>{perfil.nombre}</h2><p>{perfil.rol}</p></div>
+          <img
+            className="hero-image"
+            src={`${base}images/espacio-desarrollo.jpg`}
+            alt="Computador portátil con un editor de código y gráficos de interfaz"
+            width="1448"
+            height="1086"
+            fetchpriority="high"
+          />
+        </div>
+      </section>
+
+      <section className="container section" aria-labelledby="titulo-destacados">
+        <div className="section-row">
+          <div>
+            <h2 id="titulo-destacados">Proyectos destacados</h2>
+            <p>Un portafolio implementado y dos propuestas para organizar el trabajo.</p>
+          </div>
+          <Link className="text-link" to="/proyectos">Ver catálogo completo</Link>
+        </div>
+        {cargando && <p className="empty" role="status">Cargando proyectos destacados…</p>}
+        {error && (
+          <div className="empty catalog-status">
+            <p role="alert">{error}</p>
+            <button className="btn secondary" type="button" onClick={reintentar}>Volver a intentar</button>
+          </div>
+        )}
+        <div className="projects-grid featured-grid">
+          {proyectos.map(proyecto => (
+            <article className="card featured-card" key={proyecto.id}>
+              <img className="project-image" src={`${base}${proyecto.imagen}`} alt="" loading="lazy" />
+              <div className="featured-content">
+                <p className="project-type">{proyecto.conceptual ? 'Propuesta conceptual' : 'Aplicación del portafolio'}</p>
+                <h3>{proyecto.nombre}</h3>
+                <p className="featured-category">{proyecto.categoria} · {proyecto.tecnologia}</p>
+                <Link className="text-link" to={`/proyectos?proyecto=${encodeURIComponent(proyecto.id)}`}
+                  aria-label={`Ver detalle de ${proyecto.nombre}`}>Ver detalle</Link>
               </div>
-              <div className="hero-tags"><span>React</span><span>JavaScript</span><span>CSS</span><span>Interfaces web</span></div>
-              <div className="hero-profile-links"><Link to="/tecnologias">Ver formación <ArrowRight size={15}/></Link><a href={perfil.github} target="_blank" rel="noreferrer">GitHub <ArrowRight size={15}/></a></div>
-            </div>
-            <div className="hero-capabilities">
-              <article><Braces size={21}/><span>DESARROLLO</span><h3>Interfaces en React</h3><p>Componentes reutilizables y vistas conectadas.</p></article>
-              <article><Layers3 size={21}/><span>ORGANIZACIÓN</span><h3>Datos claros</h3><p>Catálogo con filtros, fichas y paginación.</p></article>
-              <article><Route size={21}/><span>EXPERIENCIA</span><h3>Navegación útil</h3><p>Información accesible en escritorio y móvil.</p></article>
-              <article><ShieldCheck size={21}/><span>CALIDAD</span><h3>Validación y pruebas</h3><p>Formularios comprobados y lógica verificable.</p></article>
+            </article>
+          ))}
+        </div>
+      </section>
+
+      <section className="band" aria-labelledby="titulo-biografia">
+        <div className="container section bio-section">
+          <h2 id="titulo-biografia">Perfil y biografía</h2>
+          <div className="bio-grid">
+            <article className="card bio-profile">
+              <img className="avatar-image" src={`${base}${perfil.avatar}`} alt="" width="66" height="66" loading="lazy" />
+              <p className="eyebrow">Perfil ficticio</p>
+              <h3>{perfil.nombre}</h3>
+              <p>{perfil.rol}</p>
+              <p>{perfil.biografia}</p>
+              <SocialLinks />
+            </article>
+            <div className="biography-items">
+              {biografia.map(({ titulo, texto }) => (
+                <article className="biography-row" key={titulo}>
+                  <h3>{titulo}</h3>
+                  <p>{texto}</p>
+                </article>
+              ))}
             </div>
           </div>
         </div>
       </section>
-      <section className="container section" id="biografia">
-        <div className="intro-grid"><div><span className="eyebrow">SOBRE MÍ</span><h2>Presentación y <em>biografía</em></h2></div><p>{perfil.biografia}</p></div>
-        <div className="bio-grid">
-          <article className="card bio-profile">
-            <img className="avatar-image" src={`${import.meta.env.BASE_URL}${perfil.avatar}`} alt="Avatar ilustrativo del perfil"/>
-            <span className="eyebrow">PERFIL PROFESIONAL</span>
-            <h3>{perfil.nombre}</h3>
-            <p>{perfil.rol}<br/>{perfil.carrera}<br/>{perfil.institucion}</p><hr/>
-            <p>{perfil.biografia}</p>
-            <div className="social">
-              <a href={perfil.github} target="_blank" rel="noreferrer"><Github size={17}/> GitHub</a>
-              <a href={perfil.linkedin} target="_blank" rel="noreferrer"><Linkedin size={17}/> LinkedIn</a>
-            </div>
-          </article>
-          <div className="biography-items">
-            {biografia.map(item => <article className="card biography-row" key={item.numero}><strong>{item.numero}</strong><div><h3>{item.titulo}</h3><p>{item.texto}</p></div></article>)}
+
+      <section className="container section" aria-labelledby="titulo-competencias">
+        <div className="section-row">
+          <div>
+            <h2 id="titulo-competencias">Competencias tecnológicas</h2>
+            <p>Herramientas aplicadas en el desarrollo de TechPortfolio.</p>
           </div>
+          <Link className="text-link" to="/tecnologias">Ver tecnologías y formación</Link>
         </div>
-      </section>
-      <section className="soft-strip">
-        <div className="container strip"><div><span className="eyebrow">EXPLORA</span><h2>Conoce los proyectos y propuestas</h2><p>Consulta los proyectos, aplica filtros y revisa sus características.</p></div><Link to="/proyectos" className="btn blue">Ver proyectos <ArrowRight size={17}/></Link></div>
+        <ul className="competency-list">
+          {tecnologias.map(tecnologia => (
+            <li className="card" key={tecnologia.nombre}>
+              <img src={`${base}${tecnologia.imagen}`} width="32" height="32" alt="" loading="lazy" />
+              {tecnologia.nombre}
+            </li>
+          ))}
+        </ul>
       </section>
     </>
   );

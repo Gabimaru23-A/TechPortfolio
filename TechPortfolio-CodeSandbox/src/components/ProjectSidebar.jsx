@@ -1,47 +1,71 @@
 import { useEffect, useRef } from 'react';
 import { ExternalLink, X } from 'lucide-react';
-import { usePortfolio } from '../context/PortfolioContext.jsx';
 
-// Dialog modal nativo: controla foco, tecla Escape y clic fuera del contenido.
-export default function ProjectSidebar() {
-  const { seleccionado, cerrar } = usePortfolio();
+export default function ProjectSidebar({ proyecto, alCerrar }) {
   const modal = useRef(null);
-  const cerrarRef = useRef(null);
+  const abierto = Boolean(proyecto);
 
   useEffect(() => {
+    if (!abierto) return undefined;
     const dialog = modal.current;
-    if (!seleccionado || !dialog) return undefined;
     const overflowAnterior = document.body.style.overflow;
-    if (!dialog.open) dialog.showModal();
+    dialog.showModal();
     document.body.style.overflow = 'hidden';
-    cerrarRef.current?.focus();
     return () => {
-      if (dialog.open) dialog.close();
+      dialog.close();
       document.body.style.overflow = overflowAnterior;
     };
-  }, [seleccionado]);
+  }, [abierto]);
 
-  if (!seleccionado) return null;
-  const proyecto = seleccionado;
+  if (!proyecto) return null;
+
+  function cerrarConEscape(event) {
+    event.preventDefault();
+    alCerrar();
+  }
+
+  function cerrarDesdeElFondo(event) {
+    if (event.target !== event.currentTarget) return;
+    const { left, right, top, bottom } = event.currentTarget.getBoundingClientRect();
+    if (event.clientX < left || event.clientX > right || event.clientY < top || event.clientY > bottom) {
+      alCerrar();
+    }
+  }
+
   const imagen = `${import.meta.env.BASE_URL}${proyecto.imagen.replace(/^\//, '')}`;
-  const filas = [
-    ['Nombre', proyecto.nombre], ['Categoría', proyecto.categoria], ['Tecnología', proyecto.tecnologia],
-    ['Estado', proyecto.estado], ['Fecha', proyecto.fecha], ['Descripción', proyecto.descripcion]
-  ];
-
   return (
-    <dialog ref={modal} className="project-sidebar" aria-labelledby="titulo-proyecto" onClose={cerrar} onClick={event => { if (event.target === event.currentTarget) event.currentTarget.close(); }}>
+    <dialog
+      ref={modal}
+      className="project-sidebar"
+      aria-labelledby="titulo-proyecto"
+      onCancel={cerrarConEscape}
+      onClick={cerrarDesdeElFondo}
+    >
       <div className="sidebar-content">
         <div className="sidebar-heading">
-          <div><span className="eyebrow">FICHA DEL PROYECTO</span><p className="sidebar-kicker">Información clave y alcance</p></div>
-          <button type="button" ref={cerrarRef} className="icon-button" aria-label="Cerrar detalle" onClick={() => modal.current?.close()}><X size={22}/><span className="sr-only">Cerrar</span></button>
+          <span className="project-type">{proyecto.conceptual ? 'Propuesta conceptual' : 'Proyecto del portafolio'}</span>
+          <button type="button" className="icon-button sidebar-close" aria-label="Cerrar detalle" onClick={alCerrar}>
+            <X size={22} aria-hidden="true" />
+          </button>
         </div>
-        <img className="drawer-image" src={imagen} alt={`Ilustración de ${proyecto.nombre}`}/>
-        <div className="sidebar-title-row"><div><span className="chip">{proyecto.categoria}</span><h2 id="titulo-proyecto">{proyecto.nombre}</h2></div><span className="status-pill">{proyecto.estado}</span></div>
+        <h2 id="titulo-proyecto">{proyecto.nombre}</h2>
+        <img className="drawer-image" src={imagen} alt={`Ilustración de ${proyecto.nombre}`} />
         <dl className="project-attributes">
-          {filas.map(([clave, valor]) => <div key={clave}><dt>{clave}</dt><dd>{valor}</dd></div>)}
-          <div><dt>Imagen</dt><dd>Ilustración del proyecto, visible en la parte superior.</dd></div>
-          <div><dt>Enlace</dt><dd>{proyecto.enlace ? <a className="text-link" href={proyecto.enlace} rel="noreferrer" target="_blank">Abrir proyecto <ExternalLink size={15}/></a> : 'Ficha descriptiva sin repositorio independiente'}</dd></div>
+          <div><dt>Categoría</dt><dd>{proyecto.categoria}</dd></div>
+          <div><dt>Tecnología</dt><dd>{proyecto.tecnologia}</dd></div>
+          <div><dt>Estado</dt><dd>{proyecto.estado}</dd></div>
+          <div><dt>Fecha</dt><dd><time dateTime={proyecto.fecha}>{proyecto.fecha}</time></dd></div>
+          <div><dt>Descripción</dt><dd>{proyecto.descripcion}</dd></div>
+          <div>
+            <dt>Enlace</dt>
+            <dd>
+              {proyecto.enlace ? (
+                <a className="text-link" href={proyecto.enlace} rel="noopener noreferrer" target="_blank">
+                  Abrir enlace del proyecto <ExternalLink size={15} aria-hidden="true" />
+                </a>
+              ) : 'Enlace no disponible'}
+            </dd>
+          </div>
         </dl>
       </div>
     </dialog>

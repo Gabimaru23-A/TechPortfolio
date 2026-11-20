@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
-import { filtrarProyectos, paginar, limpiarValorContacto, validarContacto } from '../src/utils/logic.js';
+import { filtrarProyectos, paginar, validarContacto, crearEnlaceCorreo } from '../src/utils/logic.js';
 
 const items = JSON.parse(readFileSync(new URL('../public/data/proyectos.json', import.meta.url), 'utf8'));
 
@@ -30,27 +30,53 @@ test('un filtro sin coincidencias devuelve un arreglo vacío', () => {
   assert.equal(filtrarProyectos(items,{cat:'Todas',tech:'tecnologia-inexistente'}).length,0);
 });
 
-test('el limpiador admite letras con tildes y rechaza caracteres y números', () => {
-  assert.equal(limpiarValorContacto('nombre','Ana María123!'),'Ana María');
-  assert.equal(limpiarValorContacto('telefono','+57 (310) 555-1234'),'573105551234');
-  assert.equal(limpiarValorContacto('apellidos','A'.repeat(27)).length,20);
+const contactoValido = {
+  nombre: 'Ana', apellidos: 'Muñoz', correo: 'ana@empresa.com.co', telefono: '3105551234', descripcion: 'Interfaz web'
+};
+
+test('nombre y apellidos admiten tildes y ñ hasta 20 letras', () => {
+  assert.deepEqual(validarContacto({ ...contactoValido, nombre: 'A\u0301'.repeat(20) }), {});
+  assert.ok(validarContacto({ ...contactoValido, nombre: 'Á'.repeat(21) }).nombre);
+  for (const apellido of ['De León', 'Muñoz8', 'Muñoz!', ' Muñoz', '\u0301Muñoz']) {
+    assert.ok(validarContacto({ ...contactoValido, apellidos: apellido }).apellidos);
+  }
 });
 
-test('formulario válido no tiene errores con dominios permitidos', () => {
-  assert.deepEqual(validarContacto({nombre:'Ana',apellidos:'María López',correo:'ana@gmail.com',telefono:'3105551234',descripcion:'Necesito una interfaz web.'}),{});
+test('formulario acepta correos empresariales, personales y con alias', () => {
+  for (const correo of ['ana@empresa.com.co', 'ana+ventas@equipo.empresa.co', 'ana@gmail.com', 'ana@hotmail.com']) {
+    assert.deepEqual(validarContacto({ ...contactoValido, correo }), {});
+  }
 });
 
-test('formulario rechaza dominios de correo no permitidos', () => {
-  const errores = validarContacto({nombre:'Ana',apellidos:'María López',correo:'ana@example.com',telefono:'3105551234',descripcion:'Necesito una interfaz web.'});
-  assert.equal(errores.correo, 'Usa un correo @gmail.com o @hotmail.com.');
+test('formulario rechaza correos con formato incompleto o incorrecto', () => {
+  for (const correo of ['ana@', 'ana@empresa', 'ana..ventas@empresa.co', 'ana@-empresa.co', 'ana@empresa..co', 'ana @empresa.co']) {
+    assert.equal(validarContacto({ ...contactoValido, correo }).correo, 'Escribe un correo con formato válido.');
+  }
 });
 
-test('formulario exige una descripción de al menos 20 caracteres', () => {
-  const errores = validarContacto({nombre:'Ana',apellidos:'María López',correo:'ana@gmail.com',telefono:'3105551234',descripcion:'Texto corto'});
-  assert.equal(errores.descripcion, 'La descripción debe tener al menos 20 caracteres.');
+test('formulario exige teléfono numérico y una descripción con contenido', () => {
+  assert.deepEqual(validarContacto({ ...contactoValido, telefono: '001234', descripcion: 'Consulta' }), {});
+  assert.ok(validarContacto({ ...contactoValido, telefono: '+57 3105551234' }).telefono);
+  assert.equal(validarContacto({ ...contactoValido, descripcion: ' \n ' }).descripcion, 'Escribe la descripción del proyecto.');
 });
 
 test('formulario inválido informa los cinco campos', () => {
   const errores=validarContacto({nombre:'',apellidos:'123',correo:'correo-mal',telefono:'a123',descripcion:' '});
   assert.deepEqual(Object.keys(errores).sort(),['apellidos','correo','descripcion','nombre','telefono']);
+});
+
+test('borrador codifica destinatario, asunto y mensaje con caracteres reservados y saltos de línea', () => {
+  const enlace = crearEnlaceCorreo(' contacto+web@empresa.co ', { ...contactoValido, descripcion: 'Inventario & finanzas?\nSegunda línea.' });
+  const [destinatario, query] = enlace.split('?');
+  const campos = new URLSearchParams(query);
+
+  assert.equal(destinatario, 'mailto:contacto%2Bweb@empresa.co');
+  assert.equal(campos.get('subject'), 'Contacto TechPortfolio - Ana Muñoz');
+  assert.equal(campos.get('body'), 'Nombre: Ana Muñoz\r\nCorreo: ana@empresa.com.co\r\nTeléfono: 3105551234\r\n\r\nDescripción del proyecto:\r\nInventario & finanzas?\r\nSegunda línea.');
+  assert.deepEqual([...campos.keys()], ['subject', 'body']);
+});
+
+test('borrador requiere un destinatario configurado y válido', () => {
+  assert.equal(crearEnlaceCorreo('', contactoValido), '');
+  assert.equal(crearEnlaceCorreo('correo-incompleto', contactoValido), '');
 });

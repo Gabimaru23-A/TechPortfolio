@@ -1,14 +1,41 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 480">
-      <defs><linearGradient id="g" x2="1" y2="1"><stop stop-color="#153a54"/><stop offset="1" stop-color="#457d9b"/></linearGradient></defs>
-      <rect width="800" height="480" rx="28" fill="url(#g)"/>
-      <circle cx="660" cy="90" r="180" fill="#fff" opacity=".06"/><circle cx="650" cy="380" r="110" fill="#fff" opacity=".07"/>
-      <rect x="105" y="100" width="590" height="260" rx="17" fill="#fff" fill-opacity=".13" stroke="#fff" stroke-opacity=".26" stroke-width="2"/>
-      <rect x="130" y="126" width="540" height="35" rx="7" fill="#fff" fill-opacity=".15"/>
-      <circle cx="151" cy="143" r="6" fill="#9ff3e2"/><circle cx="171" cy="143" r="6" fill="#fff" opacity=".7"/>
-      <text x="630" y="151" fill="#fff" font-family="Arial,sans-serif" font-size="16" text-anchor="end">TP-12</text>
-      <rect x="135" y="198" width="90" height="89" rx="15" fill="#92e3d8" opacity=".91"/>
-      <path d="M156 241h47m-37-14h27m-27 28h27" fill="none" stroke="#153a54" stroke-width="6" stroke-linecap="round"/>
-      <text x="250" y="226" fill="#fff" font-family="Arial,sans-serif" font-weight="bold" font-size="27">Dispositivos de red</text>
-      <text x="250" y="260" fill="#c6f4ec" font-family="Arial,sans-serif" font-size="20">Redes</text>
-      <text x="400" y="416" fill="#eafefd" font-family="Arial,sans-serif" font-size="23" font-weight="bold" text-anchor="middle">TechPortfolio</text>
-    </svg>
+  <title>Topología de dispositivos conectados a una red</title>
+  <defs>
+    <linearGradient id="fondo" x2="100%" y2="100%">
+      <stop stop-color="#26333b"/>
+      <stop offset="1" stop-color="#19232a"/>
+    </linearGradient>
+    <radialGradient id="luz" cx="50%" cy="48%" r="54%">
+      <stop stop-color="#a2cbd8" stop-opacity=".15"/>
+      <stop offset="1" stop-color="#a2cbd8" stop-opacity="0"/>
+    </radialGradient>
+    <pattern id="puntos" width="25" height="25" patternUnits="userSpaceOnUse">
+      <circle cx="13" cy="13" r="1" fill="#a2cbd8" fill-opacity=".16"/>
+    </pattern>
+  </defs>
+  <rect width="800" height="480" fill="url(#fondo)"/>
+  <rect width="800" height="480" fill="url(#luz)"/>
+  <rect x="40" y="35" width="720" height="410" rx="28" fill="url(#puntos)"/>
+  <g fill="none" stroke="#5e8596" stroke-width="4" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M400 123v62"/>
+    <path d="M400 249v47H227v38m173-38h173v38m-173-38v38"/>
+    <path d="M302 220h-71m267 0h71"/>
+  </g>
+  <g fill="#a2cbd8">
+    <circle cx="400" cy="146" r="6"/><circle cx="400" cy="296" r="6"/><circle cx="227" cy="296" r="6"/><circle cx="573" cy="296" r="6"/>
+  </g>
+  <path d="M341 123h116a20 20 0 0 0 0-40h-11a30 30 0 0 0-55-9 24 24 0 0 0-36 16h-14a17 17 0 0 0 0 33z" fill="#416475" stroke="#80a8b8" stroke-width="2"/>
+  <rect x="302" y="185" width="196" height="64" rx="13" fill="#3f5d6a" stroke="#80a8b8" stroke-width="2"/>
+  <g fill="#a2cbd8">
+    <rect x="323" y="209" width="22" height="15" rx="3"/><rect x="354" y="209" width="22" height="15" rx="3"/><rect x="385" y="209" width="22" height="15" rx="3"/><rect x="416" y="209" width="22" height="15" rx="3"/><circle cx="466" cy="217" r="7"/>
+  </g>
+  <g fill="#2e4550" stroke="#638a9b" stroke-width="2">
+    <rect x="144" y="184" width="88" height="72" rx="13"/><rect x="568" y="184" width="88" height="72" rx="13"/>
+    <rect x="186" y="333" width="82" height="65" rx="12"/><rect x="359" y="333" width="82" height="65" rx="12"/><rect x="532" y="333" width="82" height="65" rx="12"/>
+  </g>
+  <path d="M173 212q15-13 30 0m-25 7q10-8 20 0m-15 7q5-4 10 0m404-12h31m-31 13h31" fill="none" stroke="#a2cbd8" stroke-width="4" stroke-linecap="round"/>
+  <g fill="none" stroke="#a2cbd8" stroke-width="3" stroke-linejoin="round">
+    <path d="M207 349h39v25h-39zM380 349h39v25h-39zM553 349h39v25h-39z"/>
+    <path d="M220 381h13m160 0h13m160 0h13"/>
+  </g>
+</svg>

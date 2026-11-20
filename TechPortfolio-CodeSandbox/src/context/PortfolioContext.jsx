@@ -1,28 +1,53 @@
-import { createContext, useContext, useMemo, useRef, useState } from 'react';
+import { createContext, useContext, useEffect, useState } from 'react';
 
 const PortfolioContext = createContext(null);
 
 export function PortfolioProvider({ children }) {
-  const [seleccionado, setSeleccionado] = useState(null);
-  const activador = useRef(null);
+  const [catalogo, setCatalogo] = useState([]);
+  const [cargando, setCargando] = useState(true);
+  const [error, setError] = useState('');
+  const [intento, setIntento] = useState(0);
 
-  const value = useMemo(() => ({
-    seleccionado,
-    abrir(proyecto, boton) {
-      activador.current = boton || null;
-      setSeleccionado(proyecto);
-    },
-    cerrar() {
-      setSeleccionado(null);
-      requestAnimationFrame(() => activador.current?.focus({ preventScroll: true }));
+  useEffect(() => {
+    const controlador = new AbortController();
+
+    async function cargarCatalogo() {
+      try {
+        const respuesta = await fetch(`${import.meta.env.BASE_URL}data/proyectos.json`, {
+          signal: controlador.signal
+        });
+        if (!respuesta.ok) throw new Error('No se pudo obtener el catálogo.');
+        const datos = await respuesta.json();
+        if (!Array.isArray(datos)) throw new Error('El catálogo no tiene un formato válido.');
+        if (!controlador.signal.aborted) setCatalogo(datos);
+      } catch {
+        if (!controlador.signal.aborted) {
+          setError('No pudimos cargar el catálogo. Vuelve a intentarlo.');
+        }
+      } finally {
+        if (!controlador.signal.aborted) setCargando(false);
+      }
     }
-  }), [seleccionado]);
 
-  return <PortfolioContext.Provider value={value}>{children}</PortfolioContext.Provider>;
+    cargarCatalogo();
+    return () => controlador.abort();
+  }, [intento]);
+
+  function reintentar() {
+    setCargando(true);
+    setError('');
+    setIntento(valor => valor + 1);
+  }
+
+  return (
+    <PortfolioContext.Provider value={{ catalogo, cargando, error, reintentar }}>
+      {children}
+    </PortfolioContext.Provider>
+  );
 }
 
 export function usePortfolio() {
-  const context = useContext(PortfolioContext);
-  if (!context) throw new Error('PortfolioProvider es obligatorio');
-  return context;
+  const contexto = useContext(PortfolioContext);
+  if (!contexto) throw new Error('PortfolioProvider es obligatorio');
+  return contexto;
 }
