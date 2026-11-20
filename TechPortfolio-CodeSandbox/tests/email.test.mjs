@@ -5,7 +5,6 @@ import { configurarEmailJS, enviarSolicitud } from '../src/utils/email.js';
 
 const entorno = {
   VITE_EMAILJS_SERVICE_ID: ' servicio-pruebas ',
-  VITE_EMAILJS_TEMPLATE_ID: 'plantilla-pruebas',
   VITE_EMAILJS_PUBLIC_KEY: 'publica-pruebas'
 };
 const configuracion = configurarEmailJS(entorno);
@@ -17,12 +16,11 @@ const formulario = {
   descripcion: ' Consulta & diseño\nSegunda línea. '
 };
 
-test('el canal oficial es fijo y el envío directo requiere los tres valores públicos', () => {
+test('el canal oficial es fijo y el envío directo requiere los dos valores públicos', () => {
   assert.equal(contactoOficial.email, 'techportafolio1@gmail.com');
   assert.deepEqual(configuracion, {
-    service_id: 'servicio-pruebas',
-    template_id: 'plantilla-pruebas',
-    user_id: 'publica-pruebas'
+    serviceId: 'servicio-pruebas',
+    publicKey: 'publica-pruebas'
   });
   for (const clave of Object.keys(entorno)) {
     assert.equal(configurarEmailJS({ ...entorno, [clave]: ' ' }), null);
@@ -31,32 +29,35 @@ test('el canal oficial es fijo y el envío directo requiere los tres valores pú
 
 test('envía los datos de la plantilla sin destinatario ni credenciales privadas', async () => {
   let solicitudes = 0;
-  await enviarSolicitud(configuracion, formulario, async (url, opciones) => {
+  await enviarSolicitud(configuracion, formulario, async (servicio, plantilla, parametros, opciones) => {
     solicitudes++;
-    assert.equal(url, 'https://api.emailjs.com/api/v1.0/email/send');
-    assert.equal(opciones.method, 'POST');
-    assert.equal(opciones.headers['Content-Type'], 'application/json');
-    assert.ok(opciones.signal instanceof AbortSignal);
-    const cuerpo = JSON.parse(opciones.body);
-    const fecha = cuerpo.template_params.fecha_solicitud;
-    assert.equal(new Date(fecha).toISOString(), fecha);
-    assert.deepEqual(cuerpo, {
-      ...configuracion,
-      template_params: {
-        nombre_completo: 'Ángela Muñoz',
-        correo: 'ana+proyectos@empresa.co',
-        telefono: '0315000000',
-        descripcion: 'Consulta & diseño\nSegunda línea.',
-        fecha_solicitud: fecha
-      }
+    assert.equal(servicio, 'servicio-pruebas');
+    assert.equal(plantilla, 'template_72768ef');
+    assert.deepEqual(opciones, { publicKey: 'publica-pruebas' });
+    assert.deepEqual(parametros, {
+      nombre: 'Ángela',
+      apellidos: 'Muñoz',
+      email: 'ana+proyectos@empresa.co',
+      telefono: '0315000000',
+      descripcion: 'Consulta & diseño\nSegunda línea.',
+      empresa: 'No aplica'
     });
-    return new Response('OK');
+    return { status: 200, text: 'OK' };
   });
   assert.equal(solicitudes, 1);
 });
 
+test('conserva la empresa indicada y completa las entradas vacías', async () => {
+  for (const [empresa, esperado] of [['  Empresa de prueba  ', 'Empresa de prueba'], ['  ', 'No aplica']]) {
+    await enviarSolicitud(configuracion, { ...formulario, empresa }, async (_servicio, _plantilla, parametros) => {
+      assert.equal(parametros.empresa, esperado);
+      return { status: 200, text: 'OK' };
+    });
+  }
+});
+
 test('rechaza errores del proveedor y respuestas sin confirmación', async () => {
-  for (const respuesta of [new Response('Error', { status: 422 }), new Response('Respuesta inesperada')]) {
+  for (const respuesta of [{ status: 422, text: 'Error' }, { status: 200, text: 'Respuesta inesperada' }]) {
     await assert.rejects(enviarSolicitud(configuracion, formulario, async () => respuesta), /no confirmó/);
   }
   await assert.rejects(enviarSolicitud(configuracion, formulario, async () => {

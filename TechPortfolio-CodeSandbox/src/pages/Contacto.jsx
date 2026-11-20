@@ -5,7 +5,7 @@ import { contactoOficial, testimonios } from '../data/site.js';
 import { configurarEmailJS, enviarSolicitud } from '../utils/email.js';
 import { crearEnlaceCorreo, validarContacto } from '../utils/logic.js';
 
-const inicial = { nombre: '', apellidos: '', correo: '', telefono: '', descripcion: '' };
+const inicial = { nombre: '', apellidos: '', correo: '', telefono: '', descripcion: '', empresa: '' };
 const configuracion = configurarEmailJS(import.meta.env);
 const ayudaNombre = 'Hasta 20 letras, sin espacios.';
 
@@ -105,7 +105,7 @@ export default function Contacto() {
         </aside>
         <form className="card contact-form" onSubmit={tramitarSolicitud} noValidate>
           {!configuracion && <p className="form-warning">El envío directo no está disponible. Puedes escribir al correo oficial o preparar un borrador con el formulario.</p>}
-          <small>Todos los campos son obligatorios.</small>
+          <small>Todos los campos salvo Empresa son obligatorios.</small>
           <div className="form-row">
             <CampoContacto {...campo('nombre')} etiqueta="Nombre" ayuda={ayudaNombre} autoComplete="given-name" />
             <CampoContacto {...campo('apellidos')} etiqueta="Apellidos" ayuda={ayudaNombre} autoComplete="family-name" />
@@ -114,6 +114,7 @@ export default function Contacto() {
             <CampoContacto {...campo('correo')} etiqueta="Correo electrónico" type="email" autoComplete="email" />
             <CampoContacto {...campo('telefono')} etiqueta="Teléfono" type="tel" inputMode="numeric" autoComplete="tel" />
           </div>
+          <CampoContacto {...campo('empresa')} etiqueta="Empresa (opcional)" autoComplete="organization" required={false} />
           <CampoContacto {...campo('descripcion')} etiqueta="Descripción del proyecto" multilinea rows={5} />
           <div className="contact-actions">
             <button type="submit" className="btn blue" disabled={enviando}>
