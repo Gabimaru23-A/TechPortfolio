@@ -9,11 +9,11 @@ const entorno = {
 };
 const configuracion = configurarEmailJS(entorno);
 const formulario = {
-  nombre: 'A\u0301ngela',
-  apellidos: 'Muñoz',
-  correo: ' ana+proyectos@empresa.co ',
-  telefono: '0315000000',
-  descripcion: ' Consulta & diseño\nSegunda línea. '
+  nombre: 'Demo',
+  apellidos: 'Primera',
+  correo: ' solicitud-uno@example.test ',
+  telefono: '2025550148',
+  descripcion: ' Consulta de catálogo '
 };
 
 test('el canal oficial es fijo y el envío directo requiere los dos valores públicos', () => {
@@ -27,33 +27,45 @@ test('el canal oficial es fijo y el envío directo requiere los dos valores púb
   }
 });
 
-test('envía los datos de la plantilla sin destinatario ni credenciales privadas', async () => {
-  let solicitudes = 0;
-  await enviarSolicitud(configuracion, formulario, async (servicio, plantilla, parametros, opciones) => {
-    solicitudes++;
-    assert.equal(servicio, 'servicio-pruebas');
-    assert.equal(plantilla, 'template_72768ef');
-    assert.deepEqual(opciones, { publicKey: 'publica-pruebas' });
-    assert.deepEqual(parametros, {
-      nombre: 'Ángela',
-      apellidos: 'Muñoz',
-      email: 'ana+proyectos@empresa.co',
-      telefono: '0315000000',
-      descripcion: 'Consulta & diseño\nSegunda línea.',
-      empresa: 'No aplica'
-    });
+test('cada envío usa exclusivamente los seis parámetros de la solicitud actual', async t => {
+  const enviar = t.mock.fn(async () => {
     return { status: 200, text: 'OK' };
   });
-  assert.equal(solicitudes, 1);
+  await enviarSolicitud(configuracion, formulario, enviar);
+  await enviarSolicitud(configuracion, {
+    nombre: 'Cafe\u0301',
+    apellidos: 'Segunda',
+    correo: 'solicitud-dos@example.test',
+    telefono: '2025550186',
+    descripcion: ' Inventario & diseño\nSegunda línea. ',
+    empresa: ' Entidad de ejemplo '
+  }, enviar);
+
+  assert.deepEqual(enviar.mock.calls.map(({ arguments: args }) => args), [
+    ['servicio-pruebas', 'template_72768ef', {
+      nombre: 'Demo',
+      apellidos: 'Primera',
+      email: 'solicitud-uno@example.test',
+      telefono: '2025550148',
+      descripcion: 'Consulta de catálogo',
+      empresa: 'No aplica'
+    }, { publicKey: 'publica-pruebas' }],
+    ['servicio-pruebas', 'template_72768ef', {
+      nombre: 'Café',
+      apellidos: 'Segunda',
+      email: 'solicitud-dos@example.test',
+      telefono: '2025550186',
+      descripcion: 'Inventario & diseño\nSegunda línea.',
+      empresa: 'Entidad de ejemplo'
+    }, { publicKey: 'publica-pruebas' }]
+  ]);
 });
 
-test('conserva la empresa indicada y completa las entradas vacías', async () => {
-  for (const [empresa, esperado] of [['  Empresa de prueba  ', 'Empresa de prueba'], ['  ', 'No aplica']]) {
-    await enviarSolicitud(configuracion, { ...formulario, empresa }, async (_servicio, _plantilla, parametros) => {
-      assert.equal(parametros.empresa, esperado);
-      return { status: 200, text: 'OK' };
-    });
-  }
+test('envía No aplica si Empresa solo contiene espacios', async () => {
+  await enviarSolicitud(configuracion, { ...formulario, empresa: '  ' }, async (_servicio, _plantilla, parametros) => {
+    assert.equal(parametros.empresa, 'No aplica');
+    return { status: 200, text: 'OK' };
+  });
 });
 
 test('rechaza errores del proveedor y respuestas sin confirmación', async () => {

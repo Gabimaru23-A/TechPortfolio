@@ -40,7 +40,7 @@ El correo oficial es **techportafolio1@gmail.com**. La configuración pública e
 
 ### Activar el envío directo
 
-El SDK [@emailjs/browser](https://www.emailjs.com/docs/sdk/send/) usa la plantilla existente `template_72768ef`. La plantilla envía la confirmación a `{{email}}` y la copia CC a `techportafolio1@gmail.com`.
+El SDK `@emailjs/browser` usa exclusivamente la plantilla existente `template_72768ef`. El formulario proporciona los datos de la solicitud y EmailJS aplica los destinatarios guardados en la plantilla. [SDK de EmailJS](https://www.emailjs.com/docs/sdk/send/)
 
 1. En el panel de EmailJS, abre **Email Services**, selecciona el servicio autorizado y copia su **Service ID**. Abre **Account → General** y copia la **Public Key**.
 2. Edita `TechPortfolio-CodeSandbox/.env.local`, junto a `package.json`. Si el archivo no existe, créalo a partir de `.env.example`. Asigna el Service ID a `VITE_EMAILJS_SERVICE_ID` y la Public Key a `VITE_EMAILJS_PUBLIC_KEY`. La variable antigua `VITE_CONTACT_EMAIL` no configura el servicio. `VITE_LINKEDIN_URL` sigue siendo opcional.
@@ -54,7 +54,12 @@ Durante la petición se bloquean envíos duplicados y se muestra el estado de ca
 
 Las variables con prefijo `VITE_` son visibles en el navegador. Usa solo el Service ID y la Public Key, mantén el CC fijo en la plantilla y limita en EmailJS los orígenes autorizados. [Orígenes permitidos](https://www.emailjs.com/docs/faq/can-i-add-my-domain-to-allowlist/)
 
-Con el servicio configurado, envía una solicitud desde Contacto usando una dirección propia. Comprueba que la confirmación muestre el nombre y los apellidos correctamente y que la bandeja oficial reciba por CC los seis datos. Prueba una vez con Empresa y otra dejándola vacía. La respuesta del SDK confirma la aceptación por el proveedor y la entrega se comprueba en ambas bandejas.
+En **Email Templates → template_72768ef**, comprueba que **To Email** sea `{{email}}` y que **Cc** contenga `techportafolio1@gmail.com` como dirección fija. Si el asunto menciona al solicitante, usa `{{nombre}} {{apellidos}}`. En el cuerpo del mensaje sustituye los valores de ejemplo por las seis variables `{{nombre}}`, `{{apellidos}}`, `{{email}}`, `{{telefono}}`, `{{empresa}}` y `{{descripcion}}`. Guarda los cambios en esa misma plantilla. [Campos de la plantilla](https://www.emailjs.com/docs/tutorial/creating-email-template/) · [Variables dinámicas](https://www.emailjs.com/docs/user-guide/dynamic-variables-templates/)
+
+1. Abre Contacto, escribe una dirección propia diferente de la dirección en CC y utiliza valores nuevos en los demás campos. Incluye en la descripción una referencia única que puedas buscar en ambas bandejas.
+2. Abre la pestaña **Red** del navegador, envía una sola vez y comprueba en la petición `POST /api/v1.0/email/send` que `template_id` sea `template_72768ef` y que `template_params` contenga los valores ingresados. Evita compartir la petición completa porque contiene configuración y datos del solicitante.
+3. Busca la referencia en los mensajes nuevos del destinatario y de la bandeja oficial. Compara los seis campos y comprueba en los detalles del mensaje que **Cc** incluya el correo oficial. Un HTTP 200 confirma la aceptación por EmailJS. La recepción se verifica en las bandejas.
+4. Si la petición contiene los valores correctos pero el mensaje muestra ejemplos fijos, revisa el asunto y el cuerpo de la plantilla guardada. Si la petición contiene valores distintos, comprueba que el navegador esté cargando la versión actual del sitio y repite la captura con datos nuevos.
 
 
 ## Estructura y manejo de datos
@@ -77,4 +82,4 @@ Inicio y Proyectos consumen el mismo `public/data/proyectos.json` mediante `useC
 
 ## Pruebas automatizadas
 
-`npm test` comprueba las rutas, el catálogo, la validación de contactos y el contrato del formulario con EmailJS.
+`npm test` comprueba las rutas, el catálogo, la validación y el contrato de EmailJS con un transporte simulado. La prueba de recepción se ejecuta manualmente desde Contacto.

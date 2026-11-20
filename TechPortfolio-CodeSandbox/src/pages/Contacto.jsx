@@ -1,3 +1,4 @@
+import { send as enviarPorEmailJS } from '@emailjs/browser';
 import { useRef, useState } from 'react';
 import { CheckCircle2, Mail } from 'lucide-react';
 import PageHeading from '../components/PageHeading.jsx';
@@ -65,7 +66,7 @@ export default function Contacto() {
     setEnviando(true);
     setResultado(null);
     try {
-      await enviarSolicitud(configuracion, formulario);
+      await enviarSolicitud(configuracion, formulario, enviarPorEmailJS);
       setFormulario(inicial);
       setResultado({ exito: true, mensaje: 'Gracias por tu solicitud. EmailJS aceptó el envío.' });
     } catch {
