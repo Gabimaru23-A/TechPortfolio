@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { Link, NavLink, useLocation } from 'react-router-dom';
 import { Github, Linkedin, Menu, X } from 'lucide-react';
-import { perfil } from '../data/site.js';
+import { contactoOficial, perfil } from '../data/site.js';
 
 const rutas = [
   { path: '/', nombre: 'Inicio' },
@@ -123,7 +123,10 @@ export default function Layout({ children }) {
           <nav className="footer-links" aria-label="Navegación del pie de página">
             {rutas.slice(1).map(({ path, nombre }) => <Link key={path} to={path}>{nombre}</Link>)}
           </nav>
-          <SocialLinks />
+          <div className="footer-contact">
+            <a className="text-link contact-email" href={`mailto:${contactoOficial.email}`}>{contactoOficial.email}</a>
+            <SocialLinks />
+          </div>
         </div>
         <p className="container footer-bottom">© {new Date().getFullYear()} TechPortfolio · Proyecto académico</p>
       </footer>

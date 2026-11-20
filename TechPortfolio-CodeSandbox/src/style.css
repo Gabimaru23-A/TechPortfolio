@@ -399,8 +399,12 @@ em { color: var(--accent); font-style: normal; }
 .contact-aside { padding: clamp(20px, 4vw, 32px); border: 1px solid var(--line); border-radius: var(--radius); background: var(--band); }
 .contact-aside h2 { margin-block: 15px 12px; }
 .contact-aside p + p { margin-top: 12px; }
+.contact-email { overflow-wrap: anywhere; }
+.footer-contact { display: grid; gap: 12px; }
 .contact-form, .form-field { display: grid; }
 .contact-form { gap: 18px; padding: clamp(16px, 3vw, 28px); }
+.contact-form > .form-warning { margin-top: 0; }
+.contact-actions button:disabled { opacity: .7; }
 .form-row { display: grid; align-items: start; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
 .form-field { gap: 6px; }
 .contact-form textarea { resize: vertical; }

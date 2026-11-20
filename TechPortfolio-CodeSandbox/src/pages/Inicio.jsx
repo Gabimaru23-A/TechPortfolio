@@ -1,7 +1,7 @@
 import { Link } from 'react-router-dom';
 import { SocialLinks } from '../components/Layout.jsx';
 import { usePortfolio } from '../context/PortfolioContext.jsx';
-import { biografia, perfil, tecnologias } from '../data/site.js';
+import { biografia, contactoOficial, perfil, tecnologias } from '../data/site.js';
 
 const destacados = ['TP-001', 'TP-003', 'TP-006'];
 const base = import.meta.env.BASE_URL;
@@ -17,11 +17,11 @@ export default function Inicio() {
       <section className="hero" aria-labelledby="titulo-inicio">
         <div className="container hero-layout">
           <div className="hero-copy">
-            <p className="eyebrow">Portafolio de soluciones TI</p>
+            <p className="eyebrow">TechPortfolio</p>
             <h1 id="titulo-inicio">Interfaces para <em>resolver</em> tareas reales.</h1>
             <p className="hero-description">
-              Desarrollo frontend y organización de información para que las personas puedan
-              consultar, gestionar y compartir datos desde la web.
+              {contactoOficial.especialidad}. Desarrollo frontend con React, JavaScript y CSS
+              para portafolios profesionales, catálogos digitales y herramientas de consulta.
             </p>
             <div className="actions">
               <Link className="btn primary" to="/proyectos">Ver proyectos</Link>

@@ -14,6 +14,11 @@ function enlaceLinkedIn(valor) {
   }
 }
 
+export const contactoOficial = {
+  email: 'techportafolio1@gmail.com',
+  especialidad: 'Diseño y desarrollo de interfaces web y soluciones TI'
+};
+
 export const perfil = {
   nombre: 'Alex Rivera',
   rol: 'Desarrollador de interfaces y soluciones TI',
@@ -22,7 +27,6 @@ export const perfil = {
   biografia: 'Perfil de demostración orientado a convertir registros dispersos y procesos manuales en interfaces que faciliten el trabajo diario.',
   github: 'https://github.com/Gabimaru23-A/TechPortfolio',
   linkedin: enlaceLinkedIn(import.meta.env?.VITE_LINKEDIN_URL),
-  email: '',
   avatar: 'images/avatar.svg'
 };
 
