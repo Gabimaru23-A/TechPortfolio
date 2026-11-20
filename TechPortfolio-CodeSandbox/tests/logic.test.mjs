@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
-import { filtrarProyectos, paginar, validarContacto, crearEnlaceCorreo } from '../src/utils/logic.js';
+import { filtrarProyectos, paginar, validarContacto } from '../src/utils/logic.js';
 
 const items = JSON.parse(readFileSync(new URL('../public/data/proyectos.json', import.meta.url), 'utf8'));
 
@@ -63,20 +63,4 @@ test('formulario exige teléfono numérico y una descripción con contenido', ()
 test('formulario inválido informa los cinco campos', () => {
   const errores=validarContacto({nombre:'',apellidos:'123',correo:'correo-mal',telefono:'a123',descripcion:' '});
   assert.deepEqual(Object.keys(errores).sort(),['apellidos','correo','descripcion','nombre','telefono']);
-});
-
-test('borrador codifica destinatario, asunto y mensaje con caracteres reservados y saltos de línea', () => {
-  const enlace = crearEnlaceCorreo(' contacto+web@empresa.co ', { ...contactoValido, descripcion: 'Inventario & finanzas?\nSegunda línea.' });
-  const [destinatario, query] = enlace.split('?');
-  const campos = new URLSearchParams(query);
-
-  assert.equal(destinatario, 'mailto:contacto%2Bweb@empresa.co');
-  assert.equal(campos.get('subject'), 'Contacto TechPortfolio - Ana Muñoz');
-  assert.equal(campos.get('body'), 'Nombre: Ana Muñoz\r\nCorreo: ana@empresa.com.co\r\nTeléfono: 3105551234\r\n\r\nDescripción del proyecto:\r\nInventario & finanzas?\r\nSegunda línea.');
-  assert.deepEqual([...campos.keys()], ['subject', 'body']);
-});
-
-test('borrador requiere un destinatario configurado y válido', () => {
-  assert.equal(crearEnlaceCorreo('', contactoValido), '');
-  assert.equal(crearEnlaceCorreo('correo-incompleto', contactoValido), '');
 });

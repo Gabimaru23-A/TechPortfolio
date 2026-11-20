@@ -3,7 +3,7 @@ import { CheckCircle2, Mail } from 'lucide-react';
 import PageHeading from '../components/PageHeading.jsx';
 import { contactoOficial, testimonios } from '../data/site.js';
 import { configurarEmailJS, enviarSolicitud } from '../utils/email.js';
-import { crearEnlaceCorreo, validarContacto } from '../utils/logic.js';
+import { validarContacto } from '../utils/logic.js';
 
 const inicial = { nombre: '', apellidos: '', correo: '', telefono: '', descripcion: '', empresa: '' };
 const configuracion = configurarEmailJS(import.meta.env);
@@ -49,7 +49,7 @@ export default function Contacto() {
 
   async function tramitarSolicitud(evento) {
     evento.preventDefault();
-    if (envioEnCurso.current) return;
+    if (!configuracion || envioEnCurso.current) return;
 
     const erroresEncontrados = validarContacto(formulario);
     setErrores(erroresEncontrados);
@@ -61,24 +61,15 @@ export default function Contacto() {
       return;
     }
 
-    if (!configuracion) {
-      setResultado({
-        enlace: crearEnlaceCorreo(contactoOficial.email, formulario),
-        mensaje: 'El borrador está listo para abrirlo y enviarlo desde tu aplicación de correo.'
-      });
-      return;
-    }
-
     envioEnCurso.current = true;
     setEnviando(true);
     setResultado(null);
     try {
       await enviarSolicitud(configuracion, formulario);
       setFormulario(inicial);
-      setResultado({ exito: true, mensaje: 'Gracias por tu solicitud. El servicio de correo confirmó el envío.' });
+      setResultado({ exito: true, mensaje: 'Gracias por tu solicitud. EmailJS aceptó el envío.' });
     } catch {
       setResultado({
-        enlace: crearEnlaceCorreo(contactoOficial.email, formulario),
         mensaje: 'No pudimos confirmar el envío. Tus datos siguen aquí. Puedes reintentar o escribir al correo oficial.'
       });
     } finally {
@@ -104,7 +95,12 @@ export default function Contacto() {
           <p><a className="text-link contact-email" href={`mailto:${contactoOficial.email}`}>{contactoOficial.email}</a></p>
         </aside>
         <form className="card contact-form" onSubmit={tramitarSolicitud} noValidate>
-          {!configuracion && <p className="form-warning">El envío directo no está disponible. Puedes escribir al correo oficial o preparar un borrador con el formulario.</p>}
+          {!configuracion && (
+            <div id="contacto-configuracion" className="form-warning">
+              El envío requiere configurar el servicio de correo. Puedes escribir al correo oficial que aparece en esta página.
+              {import.meta.env.DEV && <span>Configura VITE_EMAILJS_SERVICE_ID y VITE_EMAILJS_PUBLIC_KEY en .env.local y reinicia Vite.</span>}
+            </div>
+          )}
           <small>Todos los campos salvo Empresa son obligatorios.</small>
           <div className="form-row">
             <CampoContacto {...campo('nombre')} etiqueta="Nombre" ayuda={ayudaNombre} autoComplete="given-name" />
@@ -117,8 +113,8 @@ export default function Contacto() {
           <CampoContacto {...campo('empresa')} etiqueta="Empresa (opcional)" autoComplete="organization" required={false} />
           <CampoContacto {...campo('descripcion')} etiqueta="Descripción del proyecto" multilinea rows={5} />
           <div className="contact-actions">
-            <button type="submit" className="btn blue" disabled={enviando}>
-              {enviando ? 'Enviando solicitud…' : configuracion ? 'Enviar solicitud' : 'Preparar borrador'}
+            <button type="submit" className="btn blue" disabled={enviando || !configuracion} aria-describedby={configuracion ? undefined : 'contacto-configuracion'}>
+              {enviando ? 'Enviando solicitud…' : 'Enviar solicitud'}
             </button>
             <div role="status">
               {enviando && <span className="sr-only">Enviando solicitud.</span>}
@@ -126,7 +122,6 @@ export default function Contacto() {
                 <div className={resultado.exito ? 'success' : 'form-warning'}>
                   {resultado.exito && <CheckCircle2 size={18} aria-hidden="true" />}
                   <span>{resultado.mensaje}</span>
-                  {resultado.enlace && <a className="draft-link" href={resultado.enlace}>Abrir borrador de correo</a>}
                 </div>
               )}
             </div>

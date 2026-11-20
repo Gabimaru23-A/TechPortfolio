@@ -51,26 +51,3 @@ export function validarContacto(formulario) {
   if (!(formulario.descripcion || '').trim()) errores.descripcion = 'Escribe la descripción del proyecto.';
   return errores;
 }
-
-export function crearEnlaceCorreo(destino, formulario) {
-  const correo = (destino || '').trim();
-  if (!esCorreoValido(correo)) return '';
-
-  const [local, dominio] = correo.split('@');
-  const destinatario = `${encodeURIComponent(local)}@${encodeURIComponent(dominio)}`;
-  const nombre = `${formulario.nombre} ${formulario.apellidos}`.normalize('NFC');
-  const asunto = `Contacto TechPortfolio - ${nombre}`;
-  const descripcion = formulario.descripcion.trim().replace(/\r\n?|\n/g, '\r\n');
-  const empresa = formulario.empresa?.trim();
-  const cuerpo = [
-    `Nombre: ${nombre}`,
-    `Correo: ${formulario.correo.trim()}`,
-    `Teléfono: ${formulario.telefono}`,
-    ...(empresa ? [`Empresa: ${empresa}`] : []),
-    '',
-    'Descripción del proyecto:',
-    descripcion
-  ].join('\r\n');
-
-  return `mailto:${destinatario}?subject=${encodeURIComponent(asunto)}&body=${encodeURIComponent(cuerpo)}`;
-}

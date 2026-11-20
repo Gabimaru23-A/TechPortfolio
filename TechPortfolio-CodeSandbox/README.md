@@ -30,7 +30,7 @@ Vite escribe la compilación en `dist/`. El sitio funciona en un servidor estát
 | Proyectos | `#/proyectos` | Doce fichas, filtros combinables de categoría y tecnología, diez fichas por página, detalle lateral y reintento de carga. |
 | Tecnologías | `#/tecnologias` | Uso de React, JavaScript y CSS, herramientas de IA, formación de ejemplo y tres experiencias ficticias. |
 | Propuesta de valor | `#/propuesta` | Soluciones tecnológicas, proceso de trabajo y enlace al formulario. |
-| Contacto | `#/contacto` | Cinco campos obligatorios, empresa opcional, envío mediante EmailJS, borrador alternativo y cinco testimonios ficticios. |
+| Contacto | `#/contacto` | Cinco campos obligatorios, empresa opcional, envío mediante EmailJS y cinco testimonios ficticios. |
 
 El parámetro `proyecto` permite enlazar directamente a una ficha, por ejemplo `#/proyectos?proyecto=TP-003`. El diálogo se puede cerrar con su botón, con Escape o pulsando fuera del panel. Al cerrar, el foco vuelve al botón de la ficha cuando está disponible.
 
@@ -42,13 +42,13 @@ El correo oficial es **techportafolio1@gmail.com**. La configuración pública e
 
 El SDK [@emailjs/browser](https://www.emailjs.com/docs/sdk/send/) usa la plantilla existente `template_72768ef`. La plantilla envía la confirmación a `{{email}}` y la copia CC a `techportafolio1@gmail.com`.
 
-1. En **Email Services** del panel de EmailJS, copia el **Service ID** del servicio autorizado. En **Account**, copia la **Public Key**.
-2. Copia `.env.example` a `.env.local` y asigna esos valores a `VITE_EMAILJS_SERVICE_ID` y `VITE_EMAILJS_PUBLIC_KEY`. `VITE_LINKEDIN_URL` sigue siendo opcional.
-3. Reinicia Vite. Para habilitar el envío en el sitio publicado, configura esas variables públicas antes de ejecutar `npm run build` y publica la nueva compilación.
+1. En el panel de EmailJS, abre **Email Services**, selecciona el servicio autorizado y copia su **Service ID**. Abre **Account → General** y copia la **Public Key**.
+2. Edita `TechPortfolio-CodeSandbox/.env.local`, junto a `package.json`. Si el archivo no existe, créalo a partir de `.env.example`. Asigna el Service ID a `VITE_EMAILJS_SERVICE_ID` y la Public Key a `VITE_EMAILJS_PUBLIC_KEY`. La variable antigua `VITE_CONTACT_EMAIL` no configura el servicio. `VITE_LINKEDIN_URL` sigue siendo opcional.
+3. Reinicia Vite. Para habilitar el envío en el sitio publicado, configura las dos variables de EmailJS en el entorno de compilación, ejecuta `npm run build` y publica la nueva compilación.
 
 El formulario conserva los cinco campos obligatorios y añade **Empresa** como campo opcional. La plantilla recibe exactamente `nombre`, `apellidos`, `email`, `telefono`, `descripcion` y `empresa`. Si Empresa está vacía se envía `No aplica`.
 
-Durante la petición se bloquean envíos duplicados y se muestra el estado de carga. La confirmación y la limpieza del formulario requieren una respuesta satisfactoria de EmailJS. Si falla la petición, se conservan los campos. Si falta configuración o falla el envío, se ofrece un borrador al correo oficial.
+Durante la petición se bloquean envíos duplicados y se muestra el estado de carga. La confirmación y la limpieza del formulario requieren una respuesta satisfactoria de EmailJS. Si falla la petición, se conservan los campos. Si faltan los valores de configuración, el botón queda deshabilitado y el correo oficial permanece visible.
 
 ### Seguridad y prueba de recepción
 
@@ -65,7 +65,7 @@ Con el servicio configurado, envía una solicitud desde Contacto usando una dire
 | `src/components/` | Navegación, encabezados, filtros, tarjetas, paginación y panel lateral. |
 | `src/context/PortfolioContext.jsx` | Carga asíncrona del catálogo con `fetch`, cancelación al desmontar y recuperación ante errores. |
 | `src/data/site.js` | Configuración pública y contenido del perfil, la formación, la experiencia y los testimonios. |
-| `src/utils/logic.js` | Funciones compartidas de filtrado, paginación, validación y codificación del borrador. |
+| `src/utils/logic.js` | Funciones compartidas de filtrado, paginación y validación. |
 | `src/utils/email.js` | Configuración pública y envío de solicitudes a EmailJS. |
 | `src/style.css` | Identidad visual, foco visible y diseños adaptables. |
 | `public/` | Catálogo JSON, fotografías, ilustraciones e iconos locales. |
@@ -77,4 +77,4 @@ Inicio y Proyectos consumen el mismo `public/data/proyectos.json` mediante `useC
 
 ## Pruebas automatizadas
 
-`npm test` comprueba las rutas, el catálogo, la validación de contactos, la creación del borrador y la integración con EmailJS mediante respuestas simuladas.
+`npm test` comprueba las rutas, el catálogo, la validación de contactos y el contrato del formulario con EmailJS.

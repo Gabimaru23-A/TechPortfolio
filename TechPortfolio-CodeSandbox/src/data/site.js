@@ -45,7 +45,7 @@ export const tecnologias = [
   {
     nombre: 'JavaScript',
     imagen: 'icons/javascript.svg',
-    descripcion: 'Carga las fichas desde un archivo JSON, combina los filtros del catálogo y valida cada campo antes de preparar el borrador de contacto.'
+    descripcion: 'Carga las fichas desde un archivo JSON, combina los filtros del catálogo y valida los campos antes de enviar la solicitud de contacto.'
   },
   {
     nombre: 'CSS',
