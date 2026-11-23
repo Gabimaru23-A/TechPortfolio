@@ -46,7 +46,7 @@ El SDK `@emailjs/browser` usa exclusivamente la plantilla existente `template_72
 2. Edita `TechPortfolio-CodeSandbox/.env.local`, junto a `package.json`. Si el archivo no existe, créalo a partir de `.env.example`. Asigna el Service ID a `VITE_EMAILJS_SERVICE_ID` y la Public Key a `VITE_EMAILJS_PUBLIC_KEY`. La variable antigua `VITE_CONTACT_EMAIL` no configura el servicio. `VITE_LINKEDIN_URL` sigue siendo opcional.
 3. Reinicia Vite. Para habilitar el envío en el sitio publicado, configura las dos variables de EmailJS en el entorno de compilación, ejecuta `npm run build` y publica la nueva compilación.
 
-El formulario conserva los cinco campos obligatorios y añade **Empresa** como campo opcional. La plantilla recibe exactamente `nombre`, `apellidos`, `email`, `telefono`, `descripcion` y `empresa`. Si Empresa está vacía se envía `No aplica`.
+El formulario conserva los cinco campos obligatorios y **Empresa** es opcional. La plantilla recibe exactamente `nombre`, `apellidos`, `email`, `telefono`, `descripcion` y `empresa`. Se conservan los caracteres acentuados y el texto de la descripción y de la empresa tal como se introdujo. Se eliminan los espacios externos del correo y se envía `No aplica` cuando Empresa queda vacía o solo contiene espacios.
 
 Durante la petición se bloquean envíos duplicados y se muestra el estado de carga. La confirmación y la limpieza del formulario requieren una respuesta satisfactoria de EmailJS. Si falla la petición, se conservan los campos. Si faltan los valores de configuración, el botón queda deshabilitado y el correo oficial permanece visible.
 

@@ -34,8 +34,8 @@ test('cada envío usa exclusivamente los seis parámetros de la solicitud actual
   await enviarSolicitud(configuracion, formulario, enviar);
   await enviarSolicitud(configuracion, {
     nombre: 'Cafe\u0301',
-    apellidos: 'Segunda',
-    correo: 'solicitud-dos@example.test',
+    apellidos: 'Mun\u0303oz',
+    correo: 'proyectos+contacto@equipo.example.test',
     telefono: '2025550186',
     descripcion: ' Inventario & diseño\nSegunda línea. ',
     empresa: ' Entidad de ejemplo '
@@ -47,16 +47,16 @@ test('cada envío usa exclusivamente los seis parámetros de la solicitud actual
       apellidos: 'Primera',
       email: 'solicitud-uno@example.test',
       telefono: '2025550148',
-      descripcion: 'Consulta de catálogo',
+      descripcion: ' Consulta de catálogo ',
       empresa: 'No aplica'
     }, { publicKey: 'publica-pruebas' }],
     ['servicio-pruebas', 'template_72768ef', {
-      nombre: 'Café',
-      apellidos: 'Segunda',
-      email: 'solicitud-dos@example.test',
+      nombre: 'Cafe\u0301',
+      apellidos: 'Mun\u0303oz',
+      email: 'proyectos+contacto@equipo.example.test',
       telefono: '2025550186',
-      descripcion: 'Inventario & diseño\nSegunda línea.',
-      empresa: 'Entidad de ejemplo'
+      descripcion: ' Inventario & diseño\nSegunda línea. ',
+      empresa: ' Entidad de ejemplo '
     }, { publicKey: 'publica-pruebas' }]
   ]);
 });
@@ -69,7 +69,12 @@ test('envía No aplica si Empresa solo contiene espacios', async () => {
 });
 
 test('rechaza errores del proveedor y respuestas sin confirmación', async () => {
-  for (const respuesta of [{ status: 422, text: 'Error' }, { status: 200, text: 'Respuesta inesperada' }]) {
+  for (const respuesta of [
+    { status: 422, text: 'Error' },
+    { status: 200, text: 'Respuesta inesperada' },
+    { status: 200 },
+    undefined
+  ]) {
     await assert.rejects(enviarSolicitud(configuracion, formulario, async () => respuesta), /no confirmó/);
   }
   await assert.rejects(enviarSolicitud(configuracion, formulario, async () => {

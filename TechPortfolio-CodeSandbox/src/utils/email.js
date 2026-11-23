@@ -9,16 +9,16 @@ export function configurarEmailJS(env = {}) {
 
 export async function enviarSolicitud({ serviceId, publicKey }, formulario, enviar) {
   const parametros = {
-    nombre: formulario.nombre.normalize('NFC'),
-    apellidos: formulario.apellidos.normalize('NFC'),
+    nombre: formulario.nombre,
+    apellidos: formulario.apellidos,
     email: formulario.correo.trim(),
     telefono: formulario.telefono,
-    descripcion: formulario.descripcion.trim(),
-    empresa: formulario.empresa?.trim() || 'No aplica'
+    descripcion: formulario.descripcion,
+    empresa: formulario.empresa?.trim() ? formulario.empresa : 'No aplica'
   };
   const respuesta = await enviar(serviceId, plantilla, parametros, { publicKey });
 
-  if (respuesta.status !== 200 || respuesta.text.trim() !== 'OK') {
+  if (respuesta?.status !== 200 || respuesta.text?.trim() !== 'OK') {
     throw new Error('EmailJS no confirmó la solicitud.');
   }
 }
