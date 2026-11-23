@@ -41,22 +41,24 @@ export default function ProjectSidebar({ proyecto, alCerrar }) {
       onCancel={cerrarConEscape}
       onClick={cerrarDesdeElFondo}
     >
-      <div className="sidebar-content">
-        <div className="sidebar-heading">
+      <div className="sidebar-heading">
+        <div>
           <span className="project-type">{proyecto.conceptual ? 'Propuesta conceptual' : 'Proyecto del portafolio'}</span>
-          <button type="button" className="icon-button sidebar-close" aria-label="Cerrar detalle" onClick={alCerrar}>
-            <X size={22} aria-hidden="true" />
-          </button>
+          <h2 id="titulo-proyecto">{proyecto.nombre}</h2>
         </div>
-        <h2 id="titulo-proyecto">{proyecto.nombre}</h2>
-        <img className="drawer-image" src={imagen} alt={`Ilustración de ${proyecto.nombre}`} />
+        <button type="button" className="icon-button sidebar-close" aria-label="Cerrar detalle" onClick={alCerrar}>
+          <X size={22} aria-hidden="true" />
+        </button>
+      </div>
+      <div className="sidebar-content">
+        <img className="drawer-image" src={imagen} alt={`Ilustración de ${proyecto.nombre}`} width="800" height="480" />
         <dl className="project-attributes">
           <div><dt>Categoría</dt><dd>{proyecto.categoria}</dd></div>
           <div><dt>Tecnología</dt><dd>{proyecto.tecnologia}</dd></div>
           <div><dt>Estado</dt><dd>{proyecto.estado}</dd></div>
           <div><dt>Fecha</dt><dd><time dateTime={proyecto.fecha}>{proyecto.fecha}</time></dd></div>
-          <div><dt>Descripción</dt><dd>{proyecto.descripcion}</dd></div>
-          <div>
+          <div className="project-attribute-wide"><dt>Descripción</dt><dd>{proyecto.descripcion}</dd></div>
+          <div className="project-attribute-wide">
             <dt>Enlace</dt>
             <dd>
               {proyecto.enlace ? (

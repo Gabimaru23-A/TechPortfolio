@@ -1,6 +1,6 @@
 import { send as enviarPorEmailJS } from '@emailjs/browser';
 import { useRef, useState } from 'react';
-import { CheckCircle2, Mail } from 'lucide-react';
+import { CheckCircle2, CircleAlert, Mail } from 'lucide-react';
 import PageHeading from '../components/PageHeading.jsx';
 import { contactoOficial, testimonios } from '../data/site.js';
 import { configurarEmailJS, enviarSolicitud } from '../utils/email.js';
@@ -86,23 +86,29 @@ export default function Contacto() {
   return (
     <section className="container section page">
       <PageHeading title="Contacto con" emphasis="TechPortfolio">
-        Solicita información sobre un proyecto web o envía una consulta sobre nuestros servicios.
+        Envía una consulta sobre un proyecto web, un catálogo o una herramienta que quieras mejorar.
       </PageHeading>
       <div className="contact-grid">
         <aside className="contact-aside">
           <span className="contact-icon" aria-hidden="true"><Mail size={28} /></span>
           <h2>Hablemos de tu idea</h2>
           <p>Cuenta qué problema quieres resolver, quién usaría la solución y qué información conviene tener en cuenta.</p>
-          <p><a className="text-link contact-email" href={`mailto:${contactoOficial.email}`}>{contactoOficial.email}</a></p>
+          <div className="contact-mail">
+            <p>Correo oficial</p>
+            <a className="text-link contact-email" href={`mailto:${contactoOficial.email}`}>{contactoOficial.email}</a>
+          </div>
         </aside>
-        <form className="card contact-form" onSubmit={tramitarSolicitud} noValidate>
+        <form className="card contact-form" aria-labelledby="titulo-solicitud" onSubmit={tramitarSolicitud} noValidate>
+          <div className="contact-form-heading">
+            <h2 id="titulo-solicitud">Describe tu proyecto</h2>
+            <small>Todos los campos salvo Empresa son obligatorios.</small>
+          </div>
           {!configuracion && (
             <div id="contacto-configuracion" className="form-warning">
               El envío requiere configurar el servicio de correo. Puedes escribir al correo oficial que aparece en esta página.
               {import.meta.env.DEV && <span>Configura VITE_EMAILJS_SERVICE_ID y VITE_EMAILJS_PUBLIC_KEY en .env.local y reinicia Vite.</span>}
             </div>
           )}
-          <small>Todos los campos salvo Empresa son obligatorios.</small>
           <div className="form-row">
             <CampoContacto {...campo('nombre')} etiqueta="Nombre" ayuda={ayudaNombre} autoComplete="given-name" />
             <CampoContacto {...campo('apellidos')} etiqueta="Apellidos" ayuda={ayudaNombre} autoComplete="family-name" />
@@ -114,14 +120,16 @@ export default function Contacto() {
           <CampoContacto {...campo('empresa')} etiqueta="Empresa (opcional)" autoComplete="organization" required={false} />
           <CampoContacto {...campo('descripcion')} etiqueta="Descripción del proyecto" multilinea rows={5} />
           <div className="contact-actions">
-            <button type="submit" className="btn blue" disabled={enviando || !configuracion} aria-describedby={configuracion ? undefined : 'contacto-configuracion'}>
+            <button type="submit" className="btn blue" disabled={enviando || !configuracion} aria-busy={enviando} aria-describedby={configuracion ? undefined : 'contacto-configuracion'}>
               {enviando ? 'Enviando solicitud…' : 'Enviar solicitud'}
             </button>
             <div role="status">
               {enviando && <span className="sr-only">Enviando solicitud.</span>}
               {resultado && (
-                <div className={resultado.exito ? 'success' : 'form-warning'}>
-                  {resultado.exito && <CheckCircle2 size={18} aria-hidden="true" />}
+                <div className={`contact-feedback ${resultado.exito ? 'success' : 'form-warning'}`}>
+                  {resultado.exito
+                    ? <CheckCircle2 size={18} aria-hidden="true" />
+                    : <CircleAlert size={18} aria-hidden="true" />}
                   <span>{resultado.mensaje}</span>
                 </div>
               )}
@@ -132,12 +140,12 @@ export default function Contacto() {
       <section aria-labelledby="testimonios-titulo">
         <div className="timeline-heading">
           <h2 id="testimonios-titulo">Testimonios</h2>
-          <p>Opiniones ficticias sobre la experiencia de uso de TechPortfolio.</p>
+          <p>Comentarios ficticios que ilustran el uso del portafolio.</p>
         </div>
         <div className="testimonial-grid">
           {testimonios.map(persona => (
             <figure className="card testimonial" key={persona.nombre}>
-              <blockquote><p>{persona.texto}</p></blockquote>
+              <blockquote><p>«{persona.texto}»</p></blockquote>
               <figcaption><strong>{persona.nombre}</strong><small>{persona.cargo}</small></figcaption>
             </figure>
           ))}

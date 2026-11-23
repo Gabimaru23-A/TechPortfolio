@@ -16,7 +16,7 @@ function enlaceLinkedIn(valor) {
 
 export const contactoOficial = {
   email: 'techportafolio1@gmail.com',
-  especialidad: 'Diseño y desarrollo de interfaces web y soluciones TI'
+  especialidad: 'Diseño web y soluciones TI'
 };
 
 export const perfil = {
@@ -40,23 +40,23 @@ export const tecnologias = [
   {
     nombre: 'React',
     imagen: 'icons/react.svg',
-    descripcion: 'Comparte los datos del catálogo entre Inicio y Proyectos y actualiza las tarjetas cuando cambian los filtros o la página activa.'
+    descripcion: 'Reutiliza las fichas del catálogo en Inicio y Proyectos. Actualiza la lista al aplicar filtros o cambiar de página.'
   },
   {
     nombre: 'JavaScript',
     imagen: 'icons/javascript.svg',
-    descripcion: 'Carga las fichas desde un archivo JSON, combina los filtros del catálogo y valida los campos antes de enviar la solicitud de contacto.'
+    descripcion: 'Lee los proyectos desde JSON, combina los criterios de búsqueda y valida cada campo del formulario antes del envío.'
   },
   {
     nombre: 'CSS',
     imagen: 'icons/css.svg',
-    descripcion: 'Adapta las cuadrículas y el menú al ancho disponible, da estilo a los estados de error y hace visible el foco de teclado.'
+    descripcion: 'Ajusta tarjetas y menús a cada pantalla, distingue los errores de formulario y mantiene visible el foco del teclado.'
   }
 ];
 
 export const herramientasIA = [
-  { nombre: 'ChatGPT', descripcion: 'Apoyo para desglosar los requisitos de las cinco vistas y redactar escenarios de uso del catálogo y el formulario.' },
-  { nombre: 'Codex', descripcion: 'Apoyo en la revisión de componentes, la corrección de validaciones y la ejecución de pruebas del proyecto.' }
+  { nombre: 'ChatGPT', descripcion: 'Ayudó a concretar los requisitos de las cinco vistas y a plantear casos de uso para el catálogo y el formulario.' },
+  { nombre: 'Codex', descripcion: 'Apoyó la revisión de componentes React, el ajuste de validaciones y las pruebas de navegación y envío simulado.' }
 ];
 
 export const experiencias = [

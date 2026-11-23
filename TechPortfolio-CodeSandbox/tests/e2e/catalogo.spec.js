@@ -159,7 +159,7 @@ test('Inicio y Proyectos recuperan la carga mediante su botón de reintento', as
 });
 
 test.describe('catálogo móvil', () => {
-  test.use({ viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true });
+  test.use({ viewport: { width: 375, height: 600 }, isMobile: true, hasTouch: true });
 
   test('abre el detalle al tocar una tarjeta y cierra al tocar el fondo', async ({ page }) => {
     await page.goto('/#/proyectos');
@@ -169,7 +169,18 @@ test.describe('catálogo móvil', () => {
     await expect(dialogo).toBeInViewport();
     const dimensiones = await dialogo.boundingBox();
     expect(dimensiones.x).toBeGreaterThan(4);
-    expect(dimensiones.x + dimensiones.width).toBeLessThanOrEqual(390);
+    expect(dimensiones.x + dimensiones.width).toBeLessThanOrEqual(375);
+    const descripcion = dialogo.locator('dt').filter({ hasText: 'Descripción' });
+    const etiquetaSobreTexto = await descripcion.evaluate(etiqueta => (
+      etiqueta.getBoundingClientRect().bottom < etiqueta.nextElementSibling.getBoundingClientRect().top
+    ));
+    expect(etiquetaSobreTexto).toBe(true);
+    const desplazamiento = await dialogo.evaluate(elemento => {
+      elemento.scrollTop = elemento.scrollHeight;
+      return elemento.scrollTop;
+    });
+    expect(desplazamiento).toBeGreaterThan(0);
+    await expect(dialogo.getByRole('button', { name: 'Cerrar detalle' })).toBeInViewport();
     await page.touchscreen.tap(4, 100);
     await expect(dialogo).toBeHidden();
     await expect(abrir).toBeFocused();

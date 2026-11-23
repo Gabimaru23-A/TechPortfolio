@@ -17,11 +17,11 @@ export default function Inicio() {
       <section className="hero" aria-labelledby="titulo-inicio">
         <div className="container hero-layout">
           <div className="hero-copy">
-            <p className="eyebrow">TechPortfolio</p>
+            <p className="eyebrow">{contactoOficial.especialidad}</p>
             <h1 id="titulo-inicio">Interfaces para <em>resolver</em> tareas reales.</h1>
             <p className="hero-description">
-              {contactoOficial.especialidad}. Desarrollo frontend con React, JavaScript y CSS
-              para portafolios profesionales, catálogos digitales y herramientas de consulta.
+              Portafolios, catálogos y formularios web que ayudan a encontrar información
+              y completar tareas desde cualquier pantalla.
             </p>
             <div className="actions">
               <Link className="btn primary" to="/proyectos">Ver proyectos</Link>
@@ -41,10 +41,7 @@ export default function Inicio() {
 
       <section className="container section" aria-labelledby="titulo-destacados">
         <div className="section-row">
-          <div>
-            <h2 id="titulo-destacados">Proyectos destacados</h2>
-            <p>Un portafolio implementado y dos propuestas para organizar el trabajo.</p>
-          </div>
+          <h2 id="titulo-destacados">Proyectos destacados</h2>
           <Link className="text-link" to="/proyectos">Ver catálogo completo</Link>
         </div>
         {cargando && <p className="empty" role="status">Cargando proyectos destacados…</p>}
@@ -57,9 +54,9 @@ export default function Inicio() {
         <div className="projects-grid featured-grid">
           {proyectos.map(proyecto => (
             <article className="card featured-card" key={proyecto.id}>
-              <img className="project-image" src={`${base}${proyecto.imagen}`} alt="" loading="lazy" />
+              <img className="project-image" src={`${base}${proyecto.imagen}`} alt="" width="800" height="480" loading="lazy" />
               <div className="featured-content">
-                <p className="project-type">{proyecto.conceptual ? 'Propuesta conceptual' : 'Aplicación del portafolio'}</p>
+                <p className="project-type">{proyecto.conceptual ? 'Propuesta conceptual' : 'Proyecto del portafolio'}</p>
                 <h3>{proyecto.nombre}</h3>
                 <p className="featured-category">{proyecto.categoria} · {proyecto.tecnologia}</p>
                 <Link className="text-link" to={`/proyectos?proyecto=${encodeURIComponent(proyecto.id)}`}
@@ -98,7 +95,6 @@ export default function Inicio() {
         <div className="section-row">
           <div>
             <h2 id="titulo-competencias">Competencias tecnológicas</h2>
-            <p>Herramientas aplicadas en el desarrollo de TechPortfolio.</p>
           </div>
           <Link className="text-link" to="/tecnologias">Ver tecnologías y formación</Link>
         </div>

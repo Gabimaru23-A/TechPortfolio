@@ -7,7 +7,7 @@
     "estado": "Implementado",
     "fecha": "2026-11-01",
     "conceptual": false,
-    "descripcion": "Un perfil y varios proyectos dispersos dificultan revisar un portafolio. Esta aplicación React los reúne en un catálogo filtrable con fichas técnicas y una vía de contacto.",
+    "descripcion": "Reúne un perfil y sus proyectos en un sitio React. El visitante puede comparar fichas por categoría y tecnología, y enviar una consulta desde el mismo portafolio.",
     "imagen": "images/proyecto-01.svg",
     "enlace": "https://github.com/Gabimaru23-A/TechPortfolio"
   },
@@ -19,7 +19,7 @@
     "estado": "Propuesta",
     "fecha": "2026-11-02",
     "conceptual": true,
-    "descripcion": "Cuando los datos de usuarios quedan repartidos en varias listas, un directorio con roles y estados permite localizar cuentas y revisar qué accesos necesitan atención.",
+    "descripcion": "Centraliza cuentas dispersas en un directorio por rol y estado. Ayuda a ubicar cada cuenta e identificar qué accesos requieren revisión.",
     "imagen": "images/proyecto-02.svg",
     "enlace": null
   },
@@ -103,7 +103,7 @@
     "estado": "Propuesta",
     "fecha": "2026-11-09",
     "conceptual": true,
-    "descripcion": "Para evitar confusiones sobre la disponibilidad de equipos compartidos, un registro vincula cada entrega con su responsable y la fecha de devolución.",
+    "descripcion": "Registra quién tiene cada equipo compartido y su fecha de devolución. Permite consultar la disponibilidad antes de asignar un nuevo préstamo.",
     "imagen": "images/proyecto-09.svg",
     "enlace": null
   },

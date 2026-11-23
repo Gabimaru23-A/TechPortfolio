@@ -1,12 +1,14 @@
-import { BookOpen, BriefcaseBusiness, Sparkles } from 'lucide-react';
+import { BookOpen, BriefcaseBusiness, CodeXml, MessageSquareText } from 'lucide-react';
 import PageHeading from '../components/PageHeading.jsx';
 import { experiencias, herramientasIA, perfil, tecnologias } from '../data/site.js';
+
+const iconosIA = { ChatGPT: MessageSquareText, Codex: CodeXml };
 
 export default function Tecnologias() {
   return (
     <section className="container section page technology-page">
       <PageHeading label="COMPETENCIAS" title="Stack tecnológico y" emphasis="formación">
-        Cómo se construye TechPortfolio y qué competencias ilustra su perfil de demostración.
+        Decisiones de desarrollo de TechPortfolio y trayectoria del perfil de demostración.
       </PageHeading>
 
       <section aria-labelledby="titulo-stack">
@@ -40,15 +42,18 @@ export default function Tecnologias() {
         </section>
         <section className="technology-ai" aria-labelledby="titulo-ia">
           <h2 id="titulo-ia">Herramientas de IA</h2>
-          {herramientasIA.map(({ nombre, descripcion }) => (
-            <div className="info-line" key={nombre}>
-              <Sparkles size={24} aria-hidden="true" />
-              <div>
-                <h3>{nombre}</h3>
-                <p>{descripcion}</p>
+          {herramientasIA.map(({ nombre, descripcion }) => {
+            const Icono = iconosIA[nombre];
+            return (
+              <div className="info-line" key={nombre}>
+                <Icono size={22} aria-hidden="true" />
+                <div>
+                  <h3>{nombre}</h3>
+                  <p>{descripcion}</p>
+                </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </section>
       </div>
 
@@ -64,7 +69,8 @@ export default function Tecnologias() {
               <div>
                 <small>{periodo}</small>
                 <h3>{cargo}</h3>
-                <p><strong>{empresa}.</strong> {descripcion}</p>
+                <p className="experience-company">{empresa}</p>
+                <p>{descripcion}</p>
               </div>
             </li>
           ))}

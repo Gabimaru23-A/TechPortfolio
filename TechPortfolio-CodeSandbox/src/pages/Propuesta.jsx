@@ -5,22 +5,22 @@ import PageHeading from '../components/PageHeading.jsx';
 const soluciones = [
   {
     titulo: 'Desarrollo de interfaces web',
-    texto: 'Diseño formularios, catálogos y flujos de navegación para que las personas completen sus tareas desde el equipo o el teléfono.',
+    texto: 'Facilita consultas y solicitudes desde cualquier pantalla con formularios claros, catálogos y flujos de navegación breves.',
     icono: Monitor
   },
   {
     titulo: 'Organización de información',
-    texto: 'Agrupo registros dispersos en fichas con campos consistentes para que sea más fácil filtrar, comparar y actualizar los datos.',
+    texto: 'Encuentra y compara registros que hoy están dispersos mediante fichas coherentes, categorías y filtros.',
     icono: Layers
   },
   {
     titulo: 'Documentación de software',
-    texto: 'Documento la instalación, la configuración y las pruebas para que otras personas puedan ejecutar y mantener el proyecto.',
+    texto: 'Entrega al equipo una guía de instalación, configuración y pruebas para que pueda retomar y mantener el proyecto.',
     icono: FileText
   },
   {
     titulo: 'Soporte tecnológico',
-    texto: 'Registro cómo ocurre una incidencia, verifico su causa y compruebo que la corrección permita retomar la tarea interrumpida.',
+    texto: 'Recupera una tarea interrumpida con un diagnóstico documentado, una corrección verificable y pasos para repetir la comprobación.',
     icono: LifeBuoy
   }
 ];
@@ -37,7 +37,7 @@ export default function Propuesta() {
   return (
     <section className="container section page value-page">
       <PageHeading label="SERVICIOS Y PROCESO" title="Propuesta de" emphasis="valor">
-        Desarrollo web y soporte TI para organizar información, simplificar tareas y mantener herramientas digitales.
+        Interfaces para consultar datos y completar tareas, con documentación que facilita mantenerlas.
       </PageHeading>
 
       <section className="value-services" aria-labelledby="soluciones-titulo">
@@ -72,7 +72,7 @@ export default function Propuesta() {
       <div className="value-cta">
         <div>
           <h2>Hablemos de tu proyecto</h2>
-          <p>Comparte la tarea que necesitas resolver o la herramienta que quieres mejorar.</p>
+          <p>Cuéntanos qué tarea quieres facilitar, quién la realiza y qué información necesita.</p>
         </div>
         <Link to="/contacto" className="btn blue">Contactar</Link>
       </div>
