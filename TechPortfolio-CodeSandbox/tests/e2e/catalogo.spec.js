@@ -138,6 +138,42 @@ test('restaura el proyecto por URL directa, recarga e historial', async ({ page 
   await expect(page.getByRole('dialog')).toHaveCount(0);
 });
 
+test('un doble cierre solo retrocede una entrada del historial', async ({ page }) => {
+  await page.goto('/#/');
+  await page.getByRole('link', { name: 'Ver proyectos', exact: true }).click();
+  const abrir = page.getByRole('button', { name: 'Ver detalle de Mesa de ayuda' });
+  await abrir.click();
+  const dialogo = page.getByRole('dialog', { name: 'Mesa de ayuda' });
+  const cerrar = dialogo.getByRole('button', { name: 'Cerrar detalle' });
+  await expect(cerrar).toBeVisible();
+
+  const retrocesos = await cerrar.evaluate(boton => {
+    const navegar = window.history.go;
+    let cantidad = 0;
+    window.history.go = pasos => {
+      if (pasos === -1) cantidad++;
+      navegar.call(window.history, pasos);
+    };
+    try {
+      boton.click();
+      boton.click();
+    } finally {
+      window.history.go = navegar;
+    }
+    return cantidad;
+  });
+  expect(retrocesos).toBe(1);
+  await expect(dialogo).toBeHidden();
+  await expect(page).toHaveURL(url => url.hash === '#/proyectos');
+  await expect(abrir).toBeFocused();
+
+  await page.goForward();
+  await expect(dialogo).toBeVisible();
+  await page.keyboard.press('Escape');
+  await expect(dialogo).toBeHidden();
+  await expect(abrir).toBeFocused();
+});
+
 test('Inicio y Proyectos recuperan la carga mediante su botón de reintento', async ({ page, context }) => {
   let fallar = true;
   await context.route('**/data/proyectos.json', route => (

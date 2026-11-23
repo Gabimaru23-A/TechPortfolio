@@ -17,6 +17,7 @@ export default function Proyectos() {
   const [pagina, setPagina] = useState(1);
   const tituloResultados = useRef(null);
   const ultimoDetalle = useRef(null);
+  const cierrePendiente = useRef(false);
 
   const idProyecto = parametros.get('proyecto');
   const proyectoSeleccionado = catalogo.find(proyecto => proyecto.id === idProyecto);
@@ -28,6 +29,7 @@ export default function Proyectos() {
   const { totalPages, visibles, paginaActual } = paginar(resultados, paginaDelDetalle ?? pagina);
 
   useEffect(() => {
+    cierrePendiente.current = false;
     if (idSeleccionado) {
       ultimoDetalle.current = idSeleccionado;
       if (paginaDelDetalle) setPagina(paginaDelDetalle);
@@ -55,6 +57,9 @@ export default function Proyectos() {
   }
 
   function cerrarDetalle() {
+    if (cierrePendiente.current) return;
+    cierrePendiente.current = true;
+
     if (state?.detalleDesdeCatalogo === idProyecto) {
       navegar(-1);
       return;

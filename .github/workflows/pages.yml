@@ -46,6 +46,7 @@ jobs:
         env:
           VITE_EMAILJS_SERVICE_ID: ${{ vars.VITE_EMAILJS_SERVICE_ID }}
           VITE_EMAILJS_PUBLIC_KEY: ${{ vars.VITE_EMAILJS_PUBLIC_KEY }}
+          VITE_LINKEDIN_URL: ${{ vars.VITE_LINKEDIN_URL }}
       - name: Subir artefacto de Pages
         uses: actions/upload-pages-artifact@fc324d3547104276b827a68afc52ff2a11cc49c9 # v5
         with:

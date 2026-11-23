@@ -36,7 +36,7 @@ npm run preview -- --mode github-pages
 ```
 
 - En **Settings → Pages → Build and deployment → Source**, GitHub Pages usa **GitHub Actions**. [Ajustes de Pages](https://github.com/Gabimaru23-A/TechPortfolio/settings/pages)
-- En **Settings → Secrets and variables → Actions → Variables → Repository variables**, el workflow lee `VITE_EMAILJS_SERVICE_ID` y `VITE_EMAILJS_PUBLIC_KEY`. Si cambian, vuelve a ejecutar el workflow desde **Actions → Publicar TechPortfolio en GitHub Pages → Run workflow**, seleccionando `main`. [Variables de Actions](https://github.com/Gabimaru23-A/TechPortfolio/settings/variables/actions)
+- En **Settings → Secrets and variables → Actions → Variables → Repository variables**, el workflow lee `VITE_EMAILJS_SERVICE_ID` y `VITE_EMAILJS_PUBLIC_KEY`. Para mostrar LinkedIn, agrega `VITE_LINKEDIN_URL` con la URL HTTPS de un perfil real bajo `/in/`. Si cambian las variables, vuelve a ejecutar el workflow desde **Actions → Publicar TechPortfolio en GitHub Pages → Run workflow**, seleccionando `main`. [Variables de Actions](https://github.com/Gabimaru23-A/TechPortfolio/settings/variables/actions)
 - Si EmailJS restringe los orígenes, verifica que su lista permita `https://gabimaru23-a.github.io`. La autorización usa el origen del navegador, por lo que la ruta `/TechPortfolio/` se omite en ese valor. [Configuración de dominios en EmailJS](https://www.emailjs.com/docs/faq/can-i-add-my-domain-to-allowlist/)
 
 ## Vistas
@@ -61,7 +61,7 @@ El SDK `@emailjs/browser` usa exclusivamente la plantilla existente `template_72
 
 1. En el panel de EmailJS, abre **Email Services**, selecciona el servicio autorizado y copia su **Service ID**. Abre **Account → General** y copia la **Public Key**.
 2. Edita `TechPortfolio-CodeSandbox/.env.local`, junto a `package.json`. Si el archivo no existe, créalo a partir de `.env.example`. Asigna el Service ID a `VITE_EMAILJS_SERVICE_ID` y la Public Key a `VITE_EMAILJS_PUBLIC_KEY`. La variable antigua `VITE_CONTACT_EMAIL` no configura el servicio. `VITE_LINKEDIN_URL` sigue siendo opcional.
-3. Reinicia Vite. Para habilitar el envío en el sitio publicado, configura las dos variables de EmailJS en el entorno de compilación, ejecuta `npm run build` y publica la nueva compilación.
+3. Reinicia Vite. Para habilitar el envío en el sitio publicado, configura las dos variables en GitHub y vuelve a ejecutar el workflow de Pages. [Despliegue en GitHub Pages](#despliegue-en-github-pages)
 
 El formulario conserva los cinco campos obligatorios y **Empresa** es opcional. La plantilla recibe exactamente `nombre`, `apellidos`, `email`, `telefono`, `descripcion` y `empresa`. Se conservan los caracteres acentuados y el texto de la descripción y de la empresa tal como se introdujo. Se eliminan los espacios externos del correo y se envía `No aplica` cuando Empresa queda vacía o solo contiene espacios.
 
