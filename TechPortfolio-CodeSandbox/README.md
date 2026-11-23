@@ -83,3 +83,12 @@ Inicio y Proyectos consumen el mismo `public/data/proyectos.json` mediante `useC
 ## Pruebas automatizadas
 
 `npm test` comprueba las rutas, el catálogo, la validación y el contrato de EmailJS con un transporte simulado. La prueba de recepción se ejecuta manualmente desde Contacto.
+
+Los recorridos de navegador usan Playwright y arrancan Vite en `127.0.0.1:4175`.
+
+```bash
+npx playwright install chromium
+npm run test:e2e
+```
+
+Si ya tienes Chrome o Edge instalado, puedes ejecutar la suite con `PLAYWRIGHT_CHANNEL` configurado como `chrome` o `msedge`, respectivamente. La suite cubre navegación, historial, catálogo, formulario y flujos de teclado y menú móvil. Usa identificadores de EmailJS de prueba, intercepta los envíos y bloquea las conexiones externas durante los recorridos. Los resultados y las trazas de fallos se guardan en `test-results/`.

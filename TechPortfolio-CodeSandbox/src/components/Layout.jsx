@@ -81,10 +81,16 @@ export default function Layout({ children }) {
     principal.current?.focus({ preventScroll: true });
   }
 
+  function cerrarMenuAlSalir(event) {
+    if (menuAbierto && !event.currentTarget.contains(event.relatedTarget)) {
+      setMenuAbierto(false);
+    }
+  }
+
   return (
     <>
       <a className="skip-link" href="#contenido-principal" onClick={saltarAlContenido}>Saltar al contenido</a>
-      <header className="header" ref={encabezado}>
+      <header className="header" ref={encabezado} onBlur={cerrarMenuAlSalir}>
         <div className="container topbar">
           <Link className="brand" to="/" aria-label="TechPortfolio, ir al inicio" onClick={cerrarMenuAlNavegar}>
             <img src={marca} alt="" width="38" height="38" />
