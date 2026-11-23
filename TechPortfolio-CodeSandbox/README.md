@@ -22,6 +22,23 @@ npm run preview
 
 Vite escribe la compilación en `dist/`. El sitio funciona en un servidor estático y admite publicación desde un subdirectorio. Las rutas usan `HashRouter` y se pueden recargar sin configurar redirecciones en el servidor.
 
+## Despliegue en GitHub Pages
+
+El sitio público está disponible en [TechPortfolio](https://gabimaru23-a.github.io/TechPortfolio/).
+
+GitHub Actions instala las dependencias, ejecuta `npm test` y publica `TechPortfolio-CodeSandbox/dist` al actualizar el código en `main`. La compilación usa el modo `github-pages`, que configura Vite con la base `/TechPortfolio/`. Los enlaces directos a las vistas conservan ese prefijo, por ejemplo [Proyectos](https://gabimaru23-a.github.io/TechPortfolio/#/proyectos). [Workflow de publicación](https://github.com/Gabimaru23-A/TechPortfolio/actions/workflows/pages.yml)
+
+Para revisar esa compilación localmente, ejecuta desde esta carpeta:
+
+```bash
+npm run build -- --mode github-pages
+npm run preview -- --mode github-pages
+```
+
+- En **Settings → Pages → Build and deployment → Source**, GitHub Pages usa **GitHub Actions**. [Ajustes de Pages](https://github.com/Gabimaru23-A/TechPortfolio/settings/pages)
+- En **Settings → Secrets and variables → Actions → Variables → Repository variables**, el workflow lee `VITE_EMAILJS_SERVICE_ID` y `VITE_EMAILJS_PUBLIC_KEY`. Si cambian, vuelve a ejecutar el workflow desde **Actions → Publicar TechPortfolio en GitHub Pages → Run workflow**, seleccionando `main`. [Variables de Actions](https://github.com/Gabimaru23-A/TechPortfolio/settings/variables/actions)
+- Si EmailJS restringe los orígenes, verifica que su lista permita `https://gabimaru23-a.github.io`. La autorización usa el origen del navegador, por lo que la ruta `/TechPortfolio/` se omite en ese valor. [Configuración de dominios en EmailJS](https://www.emailjs.com/docs/faq/can-i-add-my-domain-to-allowlist/)
+
 ## Vistas
 
 | Vista | Ruta | Funcionalidad |
