@@ -1,5 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import { fileURLToPath } from 'node:url';
 import { contactoOficial } from '../src/data/site.js';
 import { configurarEmailJS, enviarSolicitud } from '../src/utils/email.js';
 import configurarVite from '../vite.config.js';
@@ -45,6 +46,13 @@ test('Pages requiere las dos variables al compilar y la compilación local sigue
     assert.equal(configurarVite({ command: 'build', mode: 'production' }).base, './');
     process.env[nombre] = entorno[nombre];
   }
+});
+
+test('Vite usa la carpeta de la aplicación desde la raíz del repositorio', t => {
+  const raizRepositorio = fileURLToPath(new URL('../../', import.meta.url));
+  const raizAplicacion = fileURLToPath(new URL('../', import.meta.url));
+  t.mock.method(process, 'cwd', () => raizRepositorio);
+  assert.equal(configurarVite({ command: 'serve', mode: 'development' }).root, raizAplicacion);
 });
 
 test('cada envío usa exclusivamente los seis parámetros de la solicitud actual', async t => {

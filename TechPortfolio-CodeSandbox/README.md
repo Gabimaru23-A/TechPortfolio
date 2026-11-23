@@ -12,7 +12,9 @@ npm ci
 npm run dev
 ```
 
-Abre la URL que indica Vite. Para verificar el proyecto y previsualizar la compilación:
+Abre la URL que indica Vite. Si abriste la raíz del repositorio en VS Code, puedes usar **Terminal → Ejecutar tarea → TechPortfolio: iniciar Vite** para arrancar el servidor desde la carpeta de la aplicación. Después de cambiar `.env.local`, detén la tarea y vuelve a ejecutarla.
+
+Para verificar el proyecto y previsualizar la compilación:
 
 ```bash
 npm test
