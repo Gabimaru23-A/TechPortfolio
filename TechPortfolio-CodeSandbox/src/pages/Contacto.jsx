@@ -7,7 +7,10 @@ import { configurarEmailJS, enviarSolicitud } from '../utils/email.js';
 import { validarContacto } from '../utils/logic.js';
 
 const inicial = { nombre: '', apellidos: '', correo: '', telefono: '', descripcion: '', empresa: '' };
-const configuracion = configurarEmailJS(import.meta.env);
+const configuracion = configurarEmailJS({
+  VITE_EMAILJS_SERVICE_ID: import.meta.env.VITE_EMAILJS_SERVICE_ID,
+  VITE_EMAILJS_PUBLIC_KEY: import.meta.env.VITE_EMAILJS_PUBLIC_KEY
+});
 const ayudaNombre = 'Hasta 20 letras, sin espacios.';
 
 function CampoContacto({ nombre, etiqueta, valor, error, cambiar, ayuda, multilinea, ...atributos }) {

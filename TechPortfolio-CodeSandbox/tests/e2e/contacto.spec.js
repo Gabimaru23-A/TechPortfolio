@@ -137,3 +137,23 @@ test('conserva los datos ante un error y permite reintentar con una sola petici�
   }
   expect(solicitudes).toHaveLength(2);
 });
+
+test.describe('contacto móvil', () => {
+  test.use({ viewport: { width: 375, height: 812 }, isMobile: true, hasTouch: true });
+
+  test('envía desde el formulario y mantiene al visitante en Contacto', async ({ page, context, baseURL }) => {
+    const solicitudes = await interceptarEmailJS(context, baseURL, () => ({ status: 200, body: 'OK' }));
+    await page.goto('/#/contacto');
+    await expect(page.locator('#contacto-configuracion')).toHaveCount(0);
+    await rellenar(page, { ...valores, 'Empresa (opcional)': 'Entidad de ejemplo' });
+    await page.getByRole('button', { name: 'Enviar solicitud' }).tap();
+    await expect(page.getByRole('status')).toContainText('EmailJS aceptó el envío.');
+    await expect(page).toHaveURL(url => url.hash === '#/contacto');
+    expect(context.pages()).toHaveLength(1);
+    expect(solicitudes).toHaveLength(1);
+    expect(solicitudes[0]).toMatchObject({
+      template_id: 'template_72768ef',
+      template_params: { empresa: 'Entidad de ejemplo' }
+    });
+  });
+});

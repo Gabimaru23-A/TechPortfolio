@@ -2,6 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { contactoOficial } from '../src/data/site.js';
 import { configurarEmailJS, enviarSolicitud } from '../src/utils/email.js';
+import configurarVite from '../vite.config.js';
 
 const entorno = {
   VITE_EMAILJS_SERVICE_ID: ' servicio-pruebas ',
@@ -24,6 +25,25 @@ test('el canal oficial es fijo y el envío directo requiere los dos valores púb
   });
   for (const clave of Object.keys(entorno)) {
     assert.equal(configurarEmailJS({ ...entorno, [clave]: ' ' }), null);
+  }
+});
+
+test('Pages requiere las dos variables al compilar y la compilación local sigue disponible', t => {
+  for (const nombre of Object.keys(entorno)) {
+    const original = process.env[nombre];
+    t.after(() => {
+      if (original === undefined) delete process.env[nombre];
+      else process.env[nombre] = original;
+    });
+    process.env[nombre] = entorno[nombre];
+  }
+  const pages = { command: 'build', mode: 'github-pages' };
+  assert.equal(configurarVite(pages).base, '/TechPortfolio/');
+  for (const nombre of Object.keys(entorno)) {
+    process.env[nombre] = ' ';
+    assert.throws(() => configurarVite(pages), /VITE_EMAILJS_SERVICE_ID y VITE_EMAILJS_PUBLIC_KEY/);
+    assert.equal(configurarVite({ command: 'build', mode: 'production' }).base, './');
+    process.env[nombre] = entorno[nombre];
   }
 });
 
