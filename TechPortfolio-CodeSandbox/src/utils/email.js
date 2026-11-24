@@ -7,7 +7,7 @@ export function configurarEmailJS(env = {}) {
   return serviceId && publicKey ? { serviceId, publicKey } : null;
 }
 
-export async function enviarSolicitud({ serviceId, publicKey }, formulario, enviar) {
+export async function enviarSolicitud({ serviceId, publicKey }, formulario, enviar, codigo) {
   const parametros = {
     nombre: formulario.nombre,
     apellidos: formulario.apellidos,
@@ -16,6 +16,7 @@ export async function enviarSolicitud({ serviceId, publicKey }, formulario, envi
     descripcion: formulario.descripcion,
     empresa: formulario.empresa?.trim() ? formulario.empresa : 'No aplica'
   };
+  if (codigo) parametros.codigo = codigo;
   const respuesta = await enviar(serviceId, plantilla, parametros, { publicKey });
 
   if (respuesta?.status !== 200 || respuesta.text?.trim() !== 'OK') {

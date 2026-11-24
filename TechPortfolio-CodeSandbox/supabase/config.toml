@@ -1,0 +1,4 @@
+project_id = "techportfolio"
+
+[functions.solicitudes]
+verify_jwt = false

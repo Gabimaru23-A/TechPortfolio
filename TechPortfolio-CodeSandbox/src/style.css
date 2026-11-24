@@ -433,6 +433,8 @@ em { color: var(--accent); font-style: normal; }
 .footer-contact { display: grid; gap: 12px; }
 .contact-form, .form-field { display: grid; }
 .contact-form { gap: 18px; padding: clamp(16px, 3vw, 28px); }
+.seguimiento-form { margin-block: 24px; }
+.seguimiento-resultado { margin-top: 6px; overflow-wrap: anywhere; }
 .contact-form-heading h2 { margin-bottom: 6px; font-size: clamp(1.3rem, 2.3vw, 1.7rem); }
 .contact-form > .form-warning { display: grid; margin-top: 0; overflow-wrap: anywhere; }
 .contact-actions button:disabled { opacity: .7; }

@@ -65,7 +65,7 @@ El SDK `@emailjs/browser` usa exclusivamente la plantilla existente `template_72
 2. Edita `TechPortfolio-CodeSandbox/.env.local`, junto a `package.json`. Si el archivo no existe, créalo a partir de `.env.example`. Asigna el Service ID a `VITE_EMAILJS_SERVICE_ID` y la Public Key a `VITE_EMAILJS_PUBLIC_KEY`. La variable antigua `VITE_CONTACT_EMAIL` no configura el servicio. `VITE_LINKEDIN_URL` sigue siendo opcional.
 3. Reinicia Vite. Para habilitar el envío en el sitio publicado, configura las dos variables en GitHub y vuelve a ejecutar el workflow de Pages. [Despliegue en GitHub Pages](#despliegue-en-github-pages)
 
-El formulario conserva los cinco campos obligatorios y **Empresa** es opcional. La plantilla recibe exactamente `nombre`, `apellidos`, `email`, `telefono`, `descripcion` y `empresa`. Se conservan los caracteres acentuados y el texto de la descripción y de la empresa tal como se introdujo. Se eliminan los espacios externos del correo y se envía `No aplica` cuando Empresa queda vacía o solo contiene espacios.
+El formulario conserva los cinco campos obligatorios y **Empresa** es opcional. La plantilla recibe `nombre`, `apellidos`, `email`, `telefono`, `descripcion` y `empresa`. Con Supabase activo también recibe `codigo`. Se conservan los caracteres acentuados y el texto de la descripción y de la empresa tal como se introdujo. Se eliminan los espacios externos del correo y se envía `No aplica` cuando Empresa queda vacía o solo contiene espacios.
 
 Durante la petición se bloquean envíos duplicados y se muestra el estado de carga. La confirmación y la limpieza del formulario requieren una respuesta satisfactoria de EmailJS. Si falla la petición, se conservan los campos. Si faltan los valores de configuración, el botón queda deshabilitado y el correo oficial permanece visible.
 
@@ -77,9 +77,32 @@ En **Email Templates → template_72768ef**, usa `{{email}}` en **To Email** y `
 
 1. Abre Contacto, escribe una dirección propia diferente de la dirección en CC y utiliza valores nuevos en los demás campos. Incluye en la descripción una referencia única que puedas buscar en ambas bandejas.
 2. Abre la pestaña **Red** del navegador, envía una sola vez y comprueba en la petición `POST /api/v1.0/email/send` que `template_id` sea `template_72768ef` y que `template_params` contenga los valores ingresados. Evita compartir la petición completa porque contiene configuración y datos del solicitante.
-3. Busca la referencia en los mensajes nuevos del destinatario y de la bandeja oficial. Compara los seis campos y comprueba en los detalles del mensaje que **Cc** y **Reply-To** incluyan el correo oficial. Un HTTP 200 confirma la aceptación por EmailJS. La recepción se verifica en las bandejas.
+3. Busca la referencia en los mensajes nuevos del destinatario y de la bandeja oficial. Compara los seis campos y comprueba en los detalles del mensaje que **Cc** y **Reply-To** incluyan el correo oficial. Si Supabase está activo, compara el código de ambos mensajes con el de la confirmación en pantalla. Un HTTP 200 confirma la aceptación por EmailJS. La recepción se verifica en las bandejas.
 4. Si la petición contiene los valores correctos pero el mensaje muestra ejemplos fijos, revisa el asunto y el cuerpo de la plantilla guardada. Si la petición contiene valores distintos, comprueba que el navegador esté cargando la versión actual del sitio y repite la captura con datos nuevos.
 
+### Activar el registro y seguimiento con Supabase
+
+1. Desde `TechPortfolio-CodeSandbox`, inicia sesión en la CLI con una cuenta autorizada en el proyecto y aplica la migración y la función. Sustituye `<project-ref>` por el identificador que aparece en la URL del proyecto en el panel de Supabase.
+
+   ```bash
+   supabase login
+   supabase link --project-ref <project-ref>
+   supabase db push --dry-run
+   supabase db push
+   supabase functions deploy solicitudes --use-api --no-verify-jwt
+   ```
+
+   La función verifica la clave publicable en el encabezado `apikey` y usa la clave administrativa que Supabase inyecta en su entorno. [Despliegue de Edge Functions](https://supabase.com/docs/guides/functions/deploy) · [Variables de Edge Functions](https://supabase.com/docs/guides/functions/secrets)
+
+2. En **EmailJS → Email Templates → template_72768ef → Content**, añade al cuerpo `Código de seguimiento: {{codigo}}` y guarda la plantilla existente. Conserva **To Email** con `{{email}}` y **Cc** y **Reply-To** con `techportafolio1@gmail.com`. El solicitante y la copia reciben el mismo contenido. [Variables dinámicas de EmailJS](https://www.emailjs.com/docs/user-guide/dynamic-variables-templates/)
+3. Usa el **Project URL** y la **Publishable key** del panel de Supabase (`sb_publishable_…`) para `VITE_SUPABASE_URL` y `VITE_SUPABASE_PUBLISHABLE_KEY` en `.env.local`. Reinicia Vite. Para Pages, agrega ambos valores en **Settings → Secrets and variables → Actions → Variables → Repository variables**, conserva las variables de EmailJS y ejecuta **Actions → Publicar TechPortfolio en GitHub Pages → Run workflow → main**. Las claves administrativas permanecen en Supabase.
+4. Realiza una prueba autorizada desde Contacto y abre **Supabase → Table Editor → public → solicitudes**. Busca el código de la confirmación, cambia `estado` a `en_revision` y comprueba el estado nuevo en el formulario de seguimiento. Comprueba el código y la recepción en ambas bandejas.
+
+La función admite por defecto el origen de GitHub Pages y los orígenes locales de Vite en el puerto `5173`. Para otros entornos, en **Supabase → Edge Functions → Secrets** establece `SOLICITUDES_ALLOWED_ORIGINS` con la lista completa de orígenes permitidos separados por comas.
+
+El formulario guarda primero la solicitud y envía después la confirmación mediante EmailJS. Si falla el correo, muestra el código del registro y permite reintentar con los mismos datos sin crear otro registro. El navegador consulta por código y recibe el estado y la fecha de actualización. Los roles públicos carecen de acceso directo a las tablas. Mientras ambas variables de Supabase estén vacías, la publicación conserva el envío directo por EmailJS sin seguimiento.
+
+Desde **Table Editor → public → solicitudes**, el equipo autorizado puede consultar los registros y cambiar `estado` a `recibida`, `en_revision`, `en_progreso`, `resuelta` o `cerrada`. Cada cambio real de estado genera una fila en `notificaciones_solicitud` con `enviada_en` vacía. Un futuro proceso privado puede leer esa cola, enviar el aviso con un proveedor de correo autorizado y marcar `enviada_en` después de que el proveedor lo acepte. El proceso de entrega de esos avisos queda pendiente de configuración.
 
 ## Estructura y manejo de datos
 
@@ -91,6 +114,7 @@ En **Email Templates → template_72768ef**, usa `{{email}}` en **To Email** y `
 | `src/data/site.js` | Configuración pública y contenido del perfil, la formación, la experiencia y los testimonios. |
 | `src/utils/logic.js` | Funciones compartidas de filtrado, paginación y validación. |
 | `src/utils/email.js` | Configuración pública y envío de solicitudes a EmailJS. |
+| `supabase/` | Migración, permisos, cola de notificaciones, validación compartida y Edge Function para registro y seguimiento. |
 | `src/style.css` | Identidad visual, foco visible y diseños adaptables. |
 | `public/` | Catálogo JSON, fotografías, ilustraciones e iconos locales. |
 | `tests/` | Pruebas de estructura y lógica con el ejecutor de Node.js. |
@@ -110,4 +134,4 @@ npx playwright install chromium
 npm run test:e2e
 ```
 
-Si ya tienes Chrome o Edge instalado, puedes ejecutar la suite con `PLAYWRIGHT_CHANNEL` configurado como `chrome` o `msedge`, respectivamente. La suite cubre navegación, historial, catálogo, formulario y flujos de teclado y menú móvil. Usa identificadores de EmailJS de prueba, intercepta los envíos y bloquea las conexiones externas durante los recorridos. Los resultados y las trazas de fallos se guardan en `test-results/`.
+Si ya tienes Chrome o Edge instalado, puedes ejecutar la suite con `PLAYWRIGHT_CHANNEL` configurado como `chrome` o `msedge`, respectivamente. La suite cubre navegación, historial, catálogo, formulario, registro, consulta de estado y flujos de teclado y menú móvil. Simula Supabase y EmailJS y bloquea las conexiones externas durante los recorridos. Los resultados y las trazas de fallos se guardan en `test-results/`.
