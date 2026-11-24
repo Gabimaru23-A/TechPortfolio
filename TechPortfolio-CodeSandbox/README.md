@@ -82,14 +82,15 @@ En **Email Templates → template_72768ef**, usa `{{email}}` en **To Email** y `
 
 ### Activar el registro y seguimiento con Supabase
 
-1. Desde `TechPortfolio-CodeSandbox`, inicia sesión en la CLI con una cuenta autorizada en el proyecto y aplica la migración y la función. Sustituye `<project-ref>` por el identificador que aparece en la URL del proyecto en el panel de Supabase.
+1. Desde `TechPortfolio-CodeSandbox`, inicia sesión en la CLI de Supabase 3 con una cuenta autorizada. Sustituye `TU_PROJECT_REF` por el identificador de tu proyecto. Revisa el historial y la simulación antes de aplicar las migraciones pendientes.
 
    ```bash
    supabase login
-   supabase link --project-ref <project-ref>
-   supabase db push --dry-run
-   supabase db push
-   supabase functions deploy solicitudes --use-api --no-verify-jwt
+   supabase link --project-ref TU_PROJECT_REF
+   supabase migration list --remote
+   supabase db push --remote --dry-run --skip-vault
+   supabase db push --remote --skip-vault
+   supabase functions deploy solicitudes --use-api
    ```
 
    La función verifica la clave publicable en el encabezado `apikey` y usa la clave administrativa que Supabase inyecta en su entorno. [Despliegue de Edge Functions](https://supabase.com/docs/guides/functions/deploy) · [Variables de Edge Functions](https://supabase.com/docs/guides/functions/secrets)

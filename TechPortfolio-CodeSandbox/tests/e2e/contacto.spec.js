@@ -141,6 +141,9 @@ test('conserva los datos ante un error y permite reintentar con una sola peticiÃ
   }
 
   respuesta = new Promise(resolve => { resolver = resolve; });
+  const nombre = page.getByLabel('Nombre', { exact: true });
+  await nombre.fill('Otro');
+  await nombre.fill(valores.Nombre);
   await enviar.click();
   await expect.poll(() => solicitudes.length).toBe(2);
   expect(solicitudes[1].template_params).toEqual(solicitudes[0].template_params);
@@ -193,7 +196,7 @@ test('conserva el intento si falla el registro y espera a Supabase antes del cor
   const enviar = page.getByRole('button', { name: 'Enviar solicitud' });
   const estado = page.getByRole('form', { name: 'Describe tu proyecto' }).getByRole('status');
   await enviar.click();
-  await expect(estado).toContainText('No pudimos guardar tu solicitud.');
+  await expect(estado).toContainText('No pudimos confirmar el registro.');
   await expect(page.getByLabel('Nombre', { exact: true })).toHaveValue(valores.Nombre);
   expect(solicitudes).toHaveLength(0);
   await enviar.click();

@@ -39,7 +39,7 @@ async function invocar(cuerpo, mensaje) {
 }
 
 export async function registrarSolicitud(id, formulario) {
-  const mensaje = 'No pudimos guardar tu solicitud. Conservamos tus datos para que puedas reintentar.';
+  const mensaje = 'No pudimos confirmar el registro. Conservamos tus datos para que puedas reintentar.';
   const datos = await invocar({ ...formulario, accion: 'crear', id }, mensaje);
   if (typeof datos?.codigo !== 'string' || !uuidV4.test(datos.codigo)) throw new Error(mensaje);
   return datos.codigo;

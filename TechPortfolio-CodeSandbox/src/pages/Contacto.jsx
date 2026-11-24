@@ -53,7 +53,6 @@ export default function Contacto() {
     setFormulario(actual => ({ ...actual, [name]: value }));
     setErrores(actual => ({ ...actual, [name]: '' }));
     setResultado(null);
-    intento.current = null;
   }
 
   async function tramitarSolicitud(evento) {
@@ -76,9 +75,13 @@ export default function Contacto() {
     let codigo;
     try {
       if (seguimientoDisponible) {
-        intento.current ??= { id: crypto.randomUUID(), codigo: null };
-        intento.current.codigo ??= await registrarSolicitud(intento.current.id, formulario);
-        codigo = intento.current.codigo;
+        const mismosDatos = intento.current && Object.keys(inicial)
+          .every(campo => intento.current.formulario[campo] === formulario[campo]);
+        if (!mismosDatos) intento.current = { id: crypto.randomUUID(), formulario, codigo: null };
+
+        const actual = intento.current;
+        actual.codigo ??= await registrarSolicitud(actual.id, formulario);
+        codigo = actual.codigo;
       }
       await enviarSolicitud(configuracion, formulario, enviarPorEmailJS, codigo);
       setFormulario(inicial);
