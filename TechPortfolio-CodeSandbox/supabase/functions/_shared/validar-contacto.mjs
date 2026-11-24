@@ -4,7 +4,11 @@ const etiquetaDominioValida = /^(?!-)[\p{L}\p{M}\p{N}-]{1,63}(?<!-)$/u;
 
 export const uuidV4 = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 
-function esCorreoValido(correo) {
+export function normalizarCorreo(correo) {
+  return correo.trim().toLowerCase();
+}
+
+export function esCorreoValido(correo) {
   const partes = correo.split('@');
   if (partes.length !== 2 || correo.length > 254) return false;
 

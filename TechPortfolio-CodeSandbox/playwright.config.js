@@ -16,8 +16,6 @@ export default defineConfig({
     command: 'node node_modules/vite/bin/vite.js --host 127.0.0.1 --port 4175 --strictPort',
     url: baseURL,
     env: {
-      VITE_EMAILJS_SERVICE_ID: 'service_e2e',
-      VITE_EMAILJS_PUBLIC_KEY: 'public_key_e2e',
       VITE_SUPABASE_URL: 'https://supabase.example.test',
       VITE_SUPABASE_PUBLISHABLE_KEY: 'sb_publishable_e2e',
       VITE_LINKEDIN_URL: ''

@@ -1,6 +1,6 @@
 # TechPortfolio
 
-Portafolio web de soluciones TI desarrollado con React, JavaScript, Vite y CSS. Presenta un perfil de demostración, un catálogo de doce proyectos y un formulario de solicitudes con EmailJS.
+Portafolio web de soluciones TI desarrollado con React, JavaScript, Vite y CSS. Presenta un perfil de demostración, un catálogo de doce proyectos y un formulario de solicitudes con Supabase y EmailJS.
 
 ## Instalación y ejecución
 
@@ -38,8 +38,7 @@ npm run preview -- --mode github-pages
 ```
 
 - En **Settings → Pages → Build and deployment → Source**, GitHub Pages usa **GitHub Actions**. [Ajustes de Pages](https://github.com/Gabimaru23-A/TechPortfolio/settings/pages)
-- En **Settings → Secrets and variables → Actions → Variables → Repository variables**, el workflow lee `VITE_EMAILJS_SERVICE_ID` y `VITE_EMAILJS_PUBLIC_KEY`. La compilación para Pages exige ambas variables para evitar publicar el formulario deshabilitado. Para mostrar LinkedIn, agrega `VITE_LINKEDIN_URL` con la URL HTTPS de un perfil real bajo `/in/`. Si cambian las variables, vuelve a ejecutar el workflow desde **Actions → Publicar TechPortfolio en GitHub Pages → Run workflow**, seleccionando `main`. [Variables de Actions](https://github.com/Gabimaru23-A/TechPortfolio/settings/variables/actions)
-- Si EmailJS restringe los orígenes, verifica que su lista permita `https://gabimaru23-a.github.io`. La autorización usa el origen del navegador, por lo que la ruta `/TechPortfolio/` se omite en ese valor. [Configuración de dominios en EmailJS](https://www.emailjs.com/docs/faq/can-i-add-my-domain-to-allowlist/)
+- Tras activar Supabase, añade `VITE_SUPABASE_URL` y `VITE_SUPABASE_PUBLISHABLE_KEY` en **Settings → Secrets and variables → Actions → Variables → Repository variables**. Si ambas están vacías, Contacto ofrece el correo oficial y deshabilita el registro hasta que el backend esté disponible. Para mostrar LinkedIn, agrega `VITE_LINKEDIN_URL` con la URL HTTPS de un perfil real bajo `/in/`. Aplica cambios en las variables desde **Actions → Publicar TechPortfolio en GitHub Pages → Run workflow**, seleccionando `main`. [Variables de Actions](https://github.com/Gabimaru23-A/TechPortfolio/settings/variables/actions)
 
 ## Vistas
 
@@ -49,7 +48,7 @@ npm run preview -- --mode github-pages
 | Proyectos | `#/proyectos` | Doce fichas, filtros combinables de categoría y tecnología, diez fichas por página, detalle lateral y reintento de carga. |
 | Tecnologías | `#/tecnologias` | Uso de React, JavaScript y CSS, herramientas de IA, formación de ejemplo y tres experiencias ficticias. |
 | Propuesta de valor | `#/propuesta` | Soluciones tecnológicas, proceso de trabajo y enlace al formulario. |
-| Contacto | `#/contacto` | Cinco campos obligatorios, empresa opcional, envío mediante EmailJS y cinco testimonios ficticios. |
+| Contacto | `#/contacto` | Registro, verificación por correo, seguimiento y cinco testimonios ficticios. |
 
 El parámetro `proyecto` permite enlazar directamente a una ficha, por ejemplo `#/proyectos?proyecto=TP-003`. El diálogo se puede cerrar con su botón, con Escape o pulsando fuera del panel. Al cerrar, el foco vuelve al botón de la ficha cuando está disponible.
 
@@ -57,53 +56,66 @@ El parámetro `proyecto` permite enlazar directamente a una ficha, por ejemplo `
 
 El correo oficial es **techportafolio1@gmail.com**. La configuración pública está en `src/data/site.js`. Contacto y el pie de página lo muestran como enlace de correo.
 
-### Activar el envío directo
+### Migraciones y Edge Functions
 
-El SDK `@emailjs/browser` usa exclusivamente la plantilla existente `template_72768ef`. El formulario proporciona los datos de la solicitud y EmailJS aplica los destinatarios guardados en la plantilla. [SDK de EmailJS](https://www.emailjs.com/docs/sdk/send/)
+Desde `TechPortfolio-CodeSandbox`, usa la CLI de Supabase 3 con una cuenta autorizada. Revisa el historial y la simulación antes de aplicar las migraciones pendientes.
 
-1. En el panel de EmailJS, abre **Email Services**, selecciona el servicio autorizado y copia su **Service ID**. Abre **Account → General** y copia la **Public Key**.
-2. Edita `TechPortfolio-CodeSandbox/.env.local`, junto a `package.json`. Si el archivo no existe, créalo a partir de `.env.example`. Asigna el Service ID a `VITE_EMAILJS_SERVICE_ID` y la Public Key a `VITE_EMAILJS_PUBLIC_KEY`. La variable antigua `VITE_CONTACT_EMAIL` no configura el servicio. `VITE_LINKEDIN_URL` sigue siendo opcional.
-3. Reinicia Vite. Para habilitar el envío en el sitio publicado, configura las dos variables en GitHub y vuelve a ejecutar el workflow de Pages. [Despliegue en GitHub Pages](#despliegue-en-github-pages)
+```bash
+npx supabase@3.4.0 login
+npx supabase@3.4.0 link --project-ref zuezuzibfkodtjnvlhzw
+npx supabase@3.4.0 migration list --remote
+npx supabase@3.4.0 db push --remote --dry-run --skip-vault
+npx supabase@3.4.0 db push --remote --skip-vault
+npx supabase@3.4.0 functions deploy solicitudes --use-api
+npx supabase@3.4.0 functions deploy notificar-solicitudes --use-api
+```
 
-El formulario conserva los cinco campos obligatorios y **Empresa** es opcional. La plantilla recibe `nombre`, `apellidos`, `email`, `telefono`, `descripcion` y `empresa`. Con Supabase activo también recibe `codigo`. Se conservan los caracteres acentuados y el texto de la descripción y de la empresa tal como se introdujo. Se eliminan los espacios externos del correo y se envía `No aplica` cuando Empresa queda vacía o solo contiene espacios.
+La primera migración crea las tablas y el registro. La segunda conserva los datos existentes, restringe el acceso a las tablas y amplía la cola. `solicitudes` valida la clave publicable y un token de Supabase Auth emitido tras una verificación OTP. `notificar-solicitudes` autoriza únicamente el token dedicado del trabajo programado. Ambas usan `SUPABASE_URL` y las claves de servidor que inyecta la plataforma. Para añadir orígenes locales aparte del puerto `5173`, define la lista completa en `SOLICITUDES_ALLOWED_ORIGINS` bajo **Edge Functions → Secrets**. [Despliegue de Edge Functions](https://supabase.com/docs/guides/functions/deploy) · [Variables de Edge Functions](https://supabase.com/docs/guides/functions/secrets)
 
-Durante la petición se bloquean envíos duplicados y se muestra el estado de carga. La confirmación y la limpieza del formulario requieren una respuesta satisfactoria de EmailJS. Si falla la petición, se conservan los campos. Si faltan los valores de configuración, el botón queda deshabilitado y el correo oficial permanece visible.
+### Configurar la verificación por correo
 
-### Seguridad y prueba de recepción
+1. En **Supabase → Authentication → Sign In / Providers → Email**, habilita Email y conserva la confirmación de correo y el cambio de correo seguro. Habilita el registro de nuevos usuarios para que los visitantes puedan verificar su correo. Usa una expiración breve para el OTP. [Acceso mediante OTP](https://supabase.com/docs/guides/auth/auth-email-passwordless)
+2. En **Authentication → Email**, configura un servidor SMTP propio en **SMTP Settings** y añade `{{ .Token }}` al cuerpo de **Confirm signup** y **Magic Link**. Los visitantes introducen ese código en Contacto. El SMTP de prueba de Supabase está limitado a cuentas del equipo. [SMTP de Supabase Auth](https://supabase.com/docs/guides/auth/auth-smtp) · [Plantillas de Auth](https://supabase.com/docs/guides/auth/auth-email-templates)
+3. Guarda el **Project URL** y la **Publishable key** en `VITE_SUPABASE_URL` y `VITE_SUPABASE_PUBLISHABLE_KEY` en `.env.local`. Reinicia Vite. Añade esos valores a GitHub después de comprobar que funcionan las funciones y el SMTP. [Despliegue en GitHub Pages](#despliegue-en-github-pages)
 
-Las variables con prefijo `VITE_` son visibles en el navegador. Usa solo el Service ID y la Public Key, mantén el CC fijo en la plantilla y limita en EmailJS los orígenes autorizados. [Orígenes permitidos](https://www.emailjs.com/docs/faq/can-i-add-my-domain-to-allowlist/)
+Al registrarse se guarda un UUID y se crea una sola confirmación en la cola. El formulario muestra el registro confirmado y el correo pendiente. Para consultar, el visitante usa el UUID y un OTP del correo asociado. Las solicitudes nuevas también quedan vinculadas al identificador de Supabase Auth. La respuesta contiene el estado y su fecha. Las filas previas conservan la consulta con el código y el correo verificado, sin activar sus avisos históricos.
 
-En **Email Templates → template_72768ef**, usa `{{email}}` en **To Email** y `techportafolio1@gmail.com` como dirección fija en **Cc** y **Reply-To**. Personaliza el saludo con `{{nombre}} {{apellidos}}` y muestra en el cuerpo las seis variables `{{nombre}}`, `{{apellidos}}`, `{{email}}`, `{{telefono}}`, `{{empresa}}` y `{{descripcion}}`. Guarda los cambios en esa misma plantilla. [Campos de la plantilla](https://www.emailjs.com/docs/tutorial/creating-email-template/) · [Variables dinámicas](https://www.emailjs.com/docs/user-guide/dynamic-variables-templates/)
+### Autorizar EmailJS y programar los avisos
 
-1. Abre Contacto, escribe una dirección propia diferente de la dirección en CC y utiliza valores nuevos en los demás campos. Incluye en la descripción una referencia única que puedas buscar en ambas bandejas.
-2. Abre la pestaña **Red** del navegador, envía una sola vez y comprueba en la petición `POST /api/v1.0/email/send` que `template_id` sea `template_72768ef` y que `template_params` contenga los valores ingresados. Evita compartir la petición completa porque contiene configuración y datos del solicitante.
-3. Busca la referencia en los mensajes nuevos del destinatario y de la bandeja oficial. Compara los seis campos y comprueba en los detalles del mensaje que **Cc** y **Reply-To** incluyan el correo oficial. Si Supabase está activo, compara el código de ambos mensajes con el de la confirmación en pantalla. Un HTTP 200 confirma la aceptación por EmailJS. La recepción se verifica en las bandejas.
-4. Si la petición contiene los valores correctos pero el mensaje muestra ejemplos fijos, revisa el asunto y el cuerpo de la plantilla guardada. Si la petición contiene valores distintos, comprueba que el navegador esté cargando la versión actual del sitio y repite la captura con datos nuevos.
+1. En **EmailJS → Account → Security → API Settings**, activa **Allow EmailJS API for non-browser applications** y **Use Private Key**. Verifica en la cuenta que un navegador con la clave publicable anterior carezca de permiso para enviar. La aplicación publicada usa exclusivamente el servidor para enviar, incluidas las confirmaciones. [Autorización de EmailJS](https://www.emailjs.com/docs/sdk/options/#privatekey) · [REST de EmailJS](https://www.emailjs.com/docs/rest-api/send/)
+2. En **EmailJS → Email Templates → `template_72768ef`**, configura **To Email** con `{{email}}`, **Subject** con `{{asunto}}` y **Cc** y **Reply-To** con `techportafolio1@gmail.com`. Incluye `{{codigo}}` y `{{estado}}` en el cuerpo. Usa la sección condicional para que únicamente la confirmación incluya los detalles. [Variables dinámicas de EmailJS](https://www.emailjs.com/docs/user-guide/dynamic-variables-templates/)
 
-### Activar el registro y seguimiento con Supabase
-
-1. Desde `TechPortfolio-CodeSandbox`, inicia sesión en la CLI de Supabase 3 con una cuenta autorizada. Sustituye `TU_PROJECT_REF` por el identificador de tu proyecto. Revisa el historial y la simulación antes de aplicar las migraciones pendientes.
-
-   ```bash
-   supabase login
-   supabase link --project-ref TU_PROJECT_REF
-   supabase migration list --remote
-   supabase db push --remote --dry-run --skip-vault
-   supabase db push --remote --skip-vault
-   supabase functions deploy solicitudes --use-api
+   ```html
+   <p>Hola, {{nombre}} {{apellidos}}.</p>
+   <p>Código de seguimiento: {{codigo}}</p>
+   <p>Estado: {{estado}}</p>
+   {{#es_confirmacion}}
+   <p>Correo: {{email}}</p>
+   <p>Teléfono: {{telefono}}</p>
+   <p>Empresa: {{empresa}}</p>
+   <p>Descripción: {{descripcion}}</p>
+   {{/es_confirmacion}}
    ```
 
-   La función verifica la clave publicable en el encabezado `apikey` y usa la clave administrativa que Supabase inyecta en su entorno. [Despliegue de Edge Functions](https://supabase.com/docs/guides/functions/deploy) · [Variables de Edge Functions](https://supabase.com/docs/guides/functions/secrets)
+3. En **Supabase → Edge Functions → Secrets**, añade `EMAILJS_SERVICE_ID`, `EMAILJS_PUBLIC_KEY`, `EMAILJS_PRIVATE_KEY` y `NOTIFICACIONES_JOB_TOKEN`. Genera el último con 32 bytes aleatorios y guarda el mismo valor en **Supabase → Vault → Create secret** con el nombre `techportfolio_notificaciones_job_token`. Mantén los secretos en Supabase. [Configuración de secretos](https://supabase.com/docs/guides/functions/secrets) · [Vault](https://supabase.com/docs/guides/database/vault)
+4. Habilita `pg_net` en **Supabase → Database → Extensions**. En **Supabase → Integrations → Cron → Jobs → Create job**, usa el nombre `techportfolio-notificaciones`, la frecuencia `* * * * *` y el tipo **SQL Snippet**. Guarda el siguiente SQL como contenido del trabajo. [Cron en Supabase](https://supabase.com/docs/guides/cron/quickstart) · [Invocar Edge Functions desde Cron](https://supabase.com/docs/guides/functions/schedule-functions)
 
-2. En **EmailJS → Email Templates → template_72768ef → Content**, añade al cuerpo `Código de seguimiento: {{codigo}}` y guarda la plantilla existente. Conserva **To Email** con `{{email}}` y **Cc** y **Reply-To** con `techportafolio1@gmail.com`. El solicitante y la copia reciben el mismo contenido. [Variables dinámicas de EmailJS](https://www.emailjs.com/docs/user-guide/dynamic-variables-templates/)
-3. Usa el **Project URL** y la **Publishable key** del panel de Supabase (`sb_publishable_…`) para `VITE_SUPABASE_URL` y `VITE_SUPABASE_PUBLISHABLE_KEY` en `.env.local`. Reinicia Vite. Para Pages, agrega ambos valores en **Settings → Secrets and variables → Actions → Variables → Repository variables**, conserva las variables de EmailJS y ejecuta **Actions → Publicar TechPortfolio en GitHub Pages → Run workflow → main**. Las claves administrativas permanecen en Supabase.
-4. Realiza una prueba autorizada desde Contacto y abre **Supabase → Table Editor → public → solicitudes**. Busca el código de la confirmación, cambia `estado` a `en_revision` y comprueba el estado nuevo en el formulario de seguimiento. Comprueba el código y la recepción en ambas bandejas.
+   ```sql
+   select net.http_post(
+     url := 'https://zuezuzibfkodtjnvlhzw.supabase.co/functions/v1/notificar-solicitudes',
+     headers := jsonb_build_object('Content-Type', 'application/json', 'X-Notificaciones-Token', decrypted_secret),
+     body := '{}'::jsonb
+   )
+   from vault.decrypted_secrets
+   where name = 'techportfolio_notificaciones_job_token';
+   ```
 
-La función admite por defecto el origen de GitHub Pages y los orígenes locales de Vite en el puerto `5173`. Para otros entornos, en **Supabase → Edge Functions → Secrets** establece `SOLICITUDES_ALLOWED_ORIGINS` con la lista completa de orígenes permitidos separados por comas.
+Desde **Table Editor → public → solicitudes**, el equipo autorizado puede cambiar `estado` a `recibida`, `en_revision`, `en_progreso`, `resuelta` o `cerrada`. El trabajo reserva y procesa un aviso por ejecución. Registra `enviada_en` cuando EmailJS lo acepta. Los rechazos explícitos se reintentan hasta seis intentos. Si la entrega es indeterminada o hay una reserva interrumpida, confirma el resultado en **EmailJS → Email History** antes de liberar la reserva o volver a programar el aviso desde **Supabase → Table Editor → notificaciones_solicitud**.
 
-El formulario guarda primero la solicitud y envía después la confirmación mediante EmailJS. Si falla el correo, muestra el código del registro y permite reintentar con los mismos datos sin crear otro registro. El navegador consulta por código y recibe el estado y la fecha de actualización. Los roles públicos carecen de acceso directo a las tablas. Mientras ambas variables de Supabase estén vacías, la publicación conserva el envío directo por EmailJS sin seguimiento.
+### Prueba de extremo a extremo
 
-Desde **Table Editor → public → solicitudes**, el equipo autorizado puede consultar los registros y cambiar `estado` a `recibida`, `en_revision`, `en_progreso`, `resuelta` o `cerrada`. Cada cambio real de estado genera una fila en `notificaciones_solicitud` con `enviada_en` vacía. Un futuro proceso privado puede leer esa cola, enviar el aviso con un proveedor de correo autorizado y marcar `enviada_en` después de que el proveedor lo acepte. El proceso de entrega de esos avisos queda pendiente de configuración.
+1. Usa en Contacto una dirección propia distinta del correo en CC, verifica el OTP y registra una solicitud identificable. Compara el UUID de pantalla con `codigo` en **Supabase → Table Editor → solicitudes** y con el código en las dos bandejas.
+2. Cambia `estado` a `en_revision` en Supabase, revisa `enviada_en` y comprueba que el aviso muestre el mismo UUID y el estado nuevo. Repite la consulta con el correo titular y comprueba que otro correo verificado reciba el mismo resultado que un código desconocido.
 
 ## Estructura y manejo de datos
 
@@ -114,8 +126,7 @@ Desde **Table Editor → public → solicitudes**, el equipo autorizado puede co
 | `src/context/PortfolioContext.jsx` | Carga asíncrona del catálogo con `fetch`, cancelación al desmontar y recuperación ante errores. |
 | `src/data/site.js` | Configuración pública y contenido del perfil, la formación, la experiencia y los testimonios. |
 | `src/utils/logic.js` | Funciones compartidas de filtrado, paginación y validación. |
-| `src/utils/email.js` | Configuración pública y envío de solicitudes a EmailJS. |
-| `supabase/` | Migración, permisos, cola de notificaciones, validación compartida y Edge Function para registro y seguimiento. |
+| `supabase/` | Migraciones, permisos, validación y funciones de registro, seguimiento y envío servidor a servidor. |
 | `src/style.css` | Identidad visual, foco visible y diseños adaptables. |
 | `public/` | Catálogo JSON, fotografías, ilustraciones e iconos locales. |
 | `tests/` | Pruebas de estructura y lógica con el ejecutor de Node.js. |
@@ -126,7 +137,7 @@ Inicio y Proyectos consumen el mismo `public/data/proyectos.json` mediante `useC
 
 ## Pruebas automatizadas
 
-`npm test` comprueba las rutas, el catálogo, la validación y el contrato de EmailJS con un transporte simulado. La prueba de recepción se ejecuta manualmente desde Contacto.
+`npm test` comprueba rutas, catálogo, validación y la integración de las dos migraciones con PostgreSQL local mediante PGlite. Las pruebas de registro, consulta y despacho usan identidades simuladas y un transporte de correo interceptado.
 
 Los recorridos de navegador usan Playwright y arrancan Vite en `127.0.0.1:4175`.
 
@@ -135,4 +146,4 @@ npx playwright install chromium
 npm run test:e2e
 ```
 
-Si ya tienes Chrome o Edge instalado, puedes ejecutar la suite con `PLAYWRIGHT_CHANNEL` configurado como `chrome` o `msedge`, respectivamente. La suite cubre navegación, historial, catálogo, formulario, registro, consulta de estado y flujos de teclado y menú móvil. Simula Supabase y EmailJS y bloquea las conexiones externas durante los recorridos. Los resultados y las trazas de fallos se guardan en `test-results/`.
+Si ya tienes Chrome o Edge instalado, puedes ejecutar la suite con `PLAYWRIGHT_CHANNEL` configurado como `chrome` o `msedge`, respectivamente. La suite cubre navegación, catálogo, verificación por correo, registro, consulta de estado y menú móvil. Simula Supabase y bloquea las conexiones externas. Los resultados y las trazas de fallos se guardan en `test-results/`.

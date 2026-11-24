@@ -1,20 +1,15 @@
-import { send as enviarPorEmailJS } from '@emailjs/browser';
 import { useRef, useState } from 'react';
 import { CheckCircle2, CircleAlert, Mail } from 'lucide-react';
 import PageHeading from '../components/PageHeading.jsx';
 import SeguimientoSolicitud from '../components/SeguimientoSolicitud.jsx';
+import VerificacionCorreo from '../components/VerificacionCorreo.jsx';
 import { contactoOficial, testimonios } from '../data/site.js';
-import { configurarEmailJS, enviarSolicitud } from '../utils/email.js';
 import { validarContacto } from '../utils/logic.js';
-import { configuracionIncompleta, registrarSolicitud, seguimientoDisponible } from '../utils/supabase.js';
+import { normalizarCorreo } from '../../supabase/functions/_shared/validar-contacto.mjs';
+import { CorreoNoVerificado, registrarSolicitud, seguimientoDisponible, tokenVerificado } from '../utils/supabase.js';
 
 const inicial = { nombre: '', apellidos: '', correo: '', telefono: '', descripcion: '', empresa: '' };
-const configuracion = configurarEmailJS({
-  VITE_EMAILJS_SERVICE_ID: import.meta.env.VITE_EMAILJS_SERVICE_ID,
-  VITE_EMAILJS_PUBLIC_KEY: import.meta.env.VITE_EMAILJS_PUBLIC_KEY
-});
 const ayudaNombre = 'Hasta 20 letras, sin espacios.';
-const puedeEnviar = Boolean(configuracion) && !configuracionIncompleta;
 
 function CampoContacto({ nombre, etiqueta, valor, error, cambiar, ayuda, multilinea, ...atributos }) {
   const Entrada = multilinea ? 'textarea' : 'input';
@@ -45,6 +40,7 @@ export default function Contacto() {
   const [errores, setErrores] = useState({});
   const [resultado, setResultado] = useState(null);
   const [enviando, setEnviando] = useState(false);
+  const [sesion, setSesion] = useState(null);
   const envioEnCurso = useRef(false);
   const intento = useRef(null);
 
@@ -57,7 +53,7 @@ export default function Contacto() {
 
   async function tramitarSolicitud(evento) {
     evento.preventDefault();
-    if (!puedeEnviar || envioEnCurso.current) return;
+    if (!seguimientoDisponible || envioEnCurso.current) return;
 
     const erroresEncontrados = validarContacto(formulario);
     setErrores(erroresEncontrados);
@@ -69,33 +65,28 @@ export default function Contacto() {
       return;
     }
 
+    const token = tokenVerificado(sesion, formulario.correo);
+    if (!token) {
+      setResultado({ mensaje: 'Verifica tu correo antes de enviar la solicitud.' });
+      return;
+    }
+
     envioEnCurso.current = true;
     setEnviando(true);
     setResultado(null);
-    let codigo;
     try {
-      if (seguimientoDisponible) {
-        const mismosDatos = intento.current && Object.keys(inicial)
-          .every(campo => intento.current.formulario[campo] === formulario[campo]);
-        if (!mismosDatos) intento.current = { id: crypto.randomUUID(), formulario, codigo: null };
-
-        const actual = intento.current;
-        actual.codigo ??= await registrarSolicitud(actual.id, formulario);
-        codigo = actual.codigo;
-      }
-      await enviarSolicitud(configuracion, formulario, enviarPorEmailJS, codigo);
+      const mismosDatos = intento.current && Object.keys(inicial)
+        .every(campo => intento.current.formulario[campo] === formulario[campo]);
+      if (!mismosDatos) intento.current = { id: crypto.randomUUID(), formulario };
+      const codigo = await registrarSolicitud(intento.current.id, formulario, token);
       setFormulario(inicial);
       intento.current = null;
-      setResultado({ exito: true, codigo, mensaje: 'Gracias por tu solicitud. EmailJS aceptó el envío.' });
+      setResultado({ exito: true, codigo, mensaje: 'Solicitud registrada. La confirmación por correo quedó en cola.' });
     } catch (error) {
-      setResultado({
-        codigo,
-        mensaje: codigo
-          ? 'Guardamos tu solicitud. No pudimos confirmar el envío del correo. Puedes reintentarlo con los mismos datos.'
-          : seguimientoDisponible
-            ? error.message
-            : 'No pudimos confirmar el envío. Tus datos siguen aquí. Puedes reintentar o escribir al correo oficial.'
-      });
+      if (error instanceof CorreoNoVerificado) {
+        setSesion(actual => actual?.token === token ? null : actual);
+      }
+      setResultado({ mensaje: error.message });
     } finally {
       envioEnCurso.current = false;
       setEnviando(false);
@@ -126,13 +117,7 @@ export default function Contacto() {
             <h2 id="titulo-solicitud">Describe tu proyecto</h2>
             <small>Todos los campos salvo Empresa son obligatorios.</small>
           </div>
-          {!configuracion && (
-            <div id="contacto-configuracion" className="form-warning">
-              El envío requiere configurar el servicio de correo. Puedes escribir al correo oficial que aparece en esta página.
-              {import.meta.env.DEV && <span>Configura VITE_EMAILJS_SERVICE_ID y VITE_EMAILJS_PUBLIC_KEY en .env.local y reinicia Vite.</span>}
-            </div>
-          )}
-          {configuracion && configuracionIncompleta && (
+          {!seguimientoDisponible && (
             <div id="contacto-configuracion" className="form-warning">
               El registro de solicitudes no está disponible. Puedes escribir al correo oficial.
               {import.meta.env.DEV && <span>Revisa VITE_SUPABASE_URL y VITE_SUPABASE_PUBLISHABLE_KEY en .env.local.</span>}
@@ -148,8 +133,13 @@ export default function Contacto() {
           </div>
           <CampoContacto {...campo('empresa')} etiqueta="Empresa (opcional)" autoComplete="organization" required={false} />
           <CampoContacto {...campo('descripcion')} etiqueta="Descripción del proyecto" multilinea rows={5} />
+          {seguimientoDisponible && (
+            <VerificacionCorreo key={normalizarCorreo(formulario.correo)} correo={formulario.correo}
+              verificado={Boolean(tokenVerificado(sesion, formulario.correo))} deshabilitado={enviando}
+              alVerificar={nueva => { setSesion(nueva); setResultado(null); }} />
+          )}
           <div className="contact-actions">
-            <button type="submit" className="btn blue" disabled={enviando || !puedeEnviar} aria-busy={enviando} aria-describedby={puedeEnviar ? undefined : 'contacto-configuracion'}>
+            <button type="submit" className="btn blue" disabled={enviando || !seguimientoDisponible} aria-busy={enviando} aria-describedby={seguimientoDisponible ? undefined : 'contacto-configuracion'}>
               {enviando ? 'Enviando solicitud…' : 'Enviar solicitud'}
             </button>
             <div role="status">
@@ -169,7 +159,7 @@ export default function Contacto() {
           </div>
         </form>
       </div>
-      {seguimientoDisponible && <SeguimientoSolicitud />}
+      {seguimientoDisponible && <SeguimientoSolicitud sesion={sesion} alVerificar={setSesion} />}
       <section aria-labelledby="testimonios-titulo">
         <div className="timeline-heading">
           <h2 id="testimonios-titulo">Testimonios</h2>

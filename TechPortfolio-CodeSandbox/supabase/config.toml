@@ -2,3 +2,6 @@ project_id = "techportfolio"
 
 [functions.solicitudes]
 verify_jwt = false
+
+[functions.notificar-solicitudes]
+verify_jwt = false

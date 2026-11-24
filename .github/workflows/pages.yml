@@ -44,8 +44,6 @@ jobs:
       - name: Compilar para GitHub Pages
         run: npm run build -- --mode github-pages
         env:
-          VITE_EMAILJS_SERVICE_ID: ${{ vars.VITE_EMAILJS_SERVICE_ID }}
-          VITE_EMAILJS_PUBLIC_KEY: ${{ vars.VITE_EMAILJS_PUBLIC_KEY }}
           VITE_SUPABASE_URL: ${{ vars.VITE_SUPABASE_URL }}
           VITE_SUPABASE_PUBLISHABLE_KEY: ${{ vars.VITE_SUPABASE_PUBLISHABLE_KEY }}
           VITE_LINKEDIN_URL: ${{ vars.VITE_LINKEDIN_URL }}
