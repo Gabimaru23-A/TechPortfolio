@@ -70,7 +70,7 @@ npx supabase@3.4.0 functions deploy solicitudes --use-api
 npx supabase@3.4.0 functions deploy notificar-solicitudes --use-api
 ```
 
-La primera migración crea las tablas y el registro. La segunda conserva los datos existentes, restringe el acceso a las tablas y amplía la cola. `solicitudes` valida la clave publicable y un token de Supabase Auth emitido tras una verificación OTP. `notificar-solicitudes` autoriza únicamente el token dedicado del trabajo programado. Ambas usan `SUPABASE_URL` y las claves de servidor que inyecta la plataforma. Para añadir orígenes locales aparte del puerto `5173`, define la lista completa en `SOLICITUDES_ALLOWED_ORIGINS` bajo **Edge Functions → Secrets**. [Despliegue de Edge Functions](https://supabase.com/docs/guides/functions/deploy) · [Variables de Edge Functions](https://supabase.com/docs/guides/functions/secrets)
+Las dos primeras migraciones crean el registro y protegen la cola. La tercera registra las invocaciones de Cron y permite consumir cada una una sola vez. `solicitudes` valida la clave publicable y un token de Supabase Auth emitido tras una verificación OTP. `notificar-solicitudes` autoriza la firma del trabajo programado. Ambas usan `SUPABASE_URL` y las claves de servidor que inyecta la plataforma. Para añadir orígenes locales aparte del puerto `5173`, define la lista completa en `SOLICITUDES_ALLOWED_ORIGINS` bajo **Edge Functions → Secrets**. [Despliegue de Edge Functions](https://supabase.com/docs/guides/functions/deploy) · [Variables de Edge Functions](https://supabase.com/docs/guides/functions/secrets)
 
 ### Configurar la verificación por correo
 
@@ -102,40 +102,25 @@ Al registrarse se guarda un UUID y se crea una sola confirmación en la cola. El
    ```
 
 3. En **Supabase → Edge Functions → Secrets**, añade `EMAILJS_SERVICE_ID`, `EMAILJS_PUBLIC_KEY`, `EMAILJS_PRIVATE_KEY` y `NOTIFICACIONES_JOB_TOKEN`. Genera el último con 32 bytes aleatorios y guarda el mismo valor en **Supabase → Vault → Create secret** con el nombre `techportfolio_notificaciones_job_token`. Mantén los secretos en Supabase. [Configuración de secretos](https://supabase.com/docs/guides/functions/secrets) · [Vault](https://supabase.com/docs/guides/database/vault)
-4. Habilita `http` en **Supabase → Database → Extensions**. En **Supabase → Integrations → Cron → Jobs**, usa el trabajo `techportfolio-notificaciones`, la frecuencia `* * * * *` y el tipo **SQL Snippet**. Cron lee el token de Vault y lo envía en la cabecera de una petición HTTPS directa. [Cron en Supabase](https://supabase.com/docs/guides/cron/quickstart) · [Extensión HTTP de Supabase](https://supabase.com/docs/guides/database/extensions/http)
+4. Habilita `pg_cron`, `pg_net` y `pgcrypto` en **Supabase → Database → Extensions**. Con las migraciones aplicadas y el despachador desplegado, ejecuta el siguiente comando desde `TechPortfolio-CodeSandbox`. El archivo actualiza el trabajo existente `techportfolio-notificaciones` para que se ejecute cada minuto. En una instalación nueva, crea primero ese trabajo en **Integrations → Cron → Jobs**. [SQL de configuración](supabase/cron/notificaciones.sql) · [Cron](https://supabase.com/docs/guides/cron/quickstart)
 
-   ```sql
-   do $despacho$
-   declare
-     token text;
-     codigo_http integer;
-   begin
-     select decrypted_secret into token
-     from vault.decrypted_secrets
-     where name = 'techportfolio_notificaciones_job_token';
-
-     if token is null or octet_length(token) < 32 then
-       return;
-     end if;
-
-     perform set_config('http.curlopt_timeout_ms', '20000', true);
-     select respuesta.status into codigo_http
-     from extensions.http((
-       'POST',
-       'https://zuezuzibfkodtjnvlhzw.supabase.co/functions/v1/notificar-solicitudes',
-       array[extensions.http_header('X-Notificaciones-Token', token)],
-       'application/json',
-       '{}'
-     )::extensions.http_request) respuesta;
-
-     if codigo_http is distinct from 200 then
-       raise exception 'El despachador respondió HTTP %', codigo_http;
-     end if;
-   end;
-   $despacho$;
+   ```bash
+   npx supabase@3.4.0 db query --remote --file supabase/cron/notificaciones.sql
    ```
 
-Desde **Table Editor → public → solicitudes**, el equipo autorizado puede cambiar `estado` a `recibida`, `en_revision`, `en_progreso`, `resuelta` o `cerrada`. El trabajo reserva y procesa un aviso por ejecución. Comprueba el historial en **Cron → Jobs → techportfolio-notificaciones**. Cada ciclo necesita un token en Vault para invocar la función. La cola registra `enviada_en` cuando EmailJS lo acepta. Los rechazos explícitos se reintentan hasta seis intentos. Si la entrega es indeterminada o hay una reserva interrumpida, confirma el resultado en **EmailJS → Email History** antes de liberar la reserva o volver a programar el aviso desde **Supabase → Table Editor → notificaciones_solicitud**.
+`pg_net` envía la petición después de confirmar la transacción, así que PostgreSQL solo encola la llamada. El trabajo usa el secreto de Vault para firmar el UUID de la invocación con HMAC-SHA256. La cola de red recibe el UUID y su firma. La Edge Function acepta cada invocación una vez y durante 90 segundos. El historial de Cron registra un error si falta el token de Vault. [Invocar Edge Functions desde Cron](https://supabase.com/docs/guides/functions/schedule-functions) · [Respuestas de pg_net](https://supabase.com/docs/guides/database/extensions/pg_net)
+
+En **Supabase → SQL Editor**, esta consulta relaciona una ejecución con su respuesta HTTP. Un `200` con `procesadas: 0` confirma la autorización y una cola vacía de avisos disponibles.
+
+```sql
+select i.creada_en, i.usada_en, r.status_code, r.timed_out, r.error_msg, r.content
+from public.invocaciones_notificaciones i
+left join net._http_response r on r.id = i.peticion_id
+order by i.creada_en desc
+limit 10;
+```
+
+Desde **Table Editor → public → solicitudes**, el equipo autorizado puede cambiar `estado` a `recibida`, `en_revision`, `en_progreso`, `resuelta` o `cerrada`. El trabajo reserva y procesa un aviso por ejecución. La cola registra `enviada_en` cuando EmailJS lo acepta. Los rechazos explícitos se reintentan hasta seis intentos. Si la entrega es indeterminada o hay una reserva interrumpida, confirma el resultado en **EmailJS → Email History** antes de liberar la reserva o volver a programar el aviso desde **Supabase → Table Editor → notificaciones_solicitud**.
 
 ### Prueba de extremo a extremo
 
@@ -162,7 +147,7 @@ Inicio y Proyectos consumen el mismo `public/data/proyectos.json` mediante `useC
 
 ## Pruebas automatizadas
 
-`npm test` comprueba rutas, catálogo, validación y la integración de las dos migraciones con PostgreSQL local mediante PGlite. Las pruebas de registro, consulta y despacho usan identidades simuladas y un transporte de correo interceptado.
+`npm test` comprueba rutas, catálogo, validación, migraciones y la firma de Cron con PostgreSQL local mediante PGlite. Las pruebas de registro, consulta y despacho usan identidades simuladas y un transporte de correo interceptado.
 
 Los recorridos de navegador usan Playwright y arrancan Vite en `127.0.0.1:4175`.
 

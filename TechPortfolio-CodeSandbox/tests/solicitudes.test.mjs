@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 import { randomUUID } from 'node:crypto';
 import { PGlite } from '@electric-sql/pglite';
+import { pgcrypto } from '@electric-sql/pglite/contrib/pgcrypto';
 import { manejarSolicitud } from '../supabase/functions/solicitudes/manejador.mjs';
 import { procesarNotificacion } from '../supabase/functions/notificar-solicitudes/manejador.mjs';
 import { uuidV4 } from '../supabase/functions/_shared/validar-contacto.mjs';
@@ -15,6 +16,7 @@ const rpc = {
   registrar_solicitud_verificada: ['p_solicitante_id', 'p_id', 'p_nombre', 'p_apellidos', 'p_correo',
     'p_telefono', 'p_descripcion', 'p_empresa'],
   consultar_solicitud_verificada: ['p_codigo', 'p_solicitante_id', 'p_correo'],
+  consumir_invocacion_notificaciones: ['p_id'],
   reservar_notificacion: ['p_reserva'],
   finalizar_notificacion: ['p_id', 'p_reserva', 'p_resultado']
 };
@@ -58,8 +60,54 @@ function identidad(correo, metodo = 'otp') {
   };
 }
 
+async function configurarCronLocal(db) {
+  await db.exec(`
+    create schema extensions;
+    create extension pgcrypto with schema extensions;
+    create schema vault;
+    create table vault.decrypted_secrets (name text primary key, decrypted_secret text not null);
+    create schema cron;
+    create table cron.job (jobid bigint primary key, jobname text, schedule text, active boolean, command text);
+    insert into cron.job values (1, 'techportfolio-notificaciones', '0 * * * *', false, '');
+    create function cron.alter_job(job_id bigint, schedule text, active boolean, command text)
+    returns void language sql as $$
+      update cron.job set schedule = $2, active = $3, command = $4 where jobid = $1;
+    $$;
+    create schema net;
+    create table net.peticiones (
+      id bigint generated always as identity primary key, url text, headers jsonb, body jsonb, timeout_millis integer
+    );
+    create function net.http_post(url text, headers jsonb, body jsonb, timeout_milliseconds integer)
+    returns bigint language sql as $$
+      insert into net.peticiones (url, headers, body, timeout_millis)
+      values ($1, $2, $3, $4) returning id;
+    $$;
+  `);
+  await db.exec(await readFile(new URL('../supabase/cron/notificaciones.sql', import.meta.url), 'utf8'));
+  const { rows: [trabajo] } = await db.query('select * from cron.job');
+  assert.equal(trabajo.jobid, 1);
+  assert.equal(trabajo.schedule, '* * * * *');
+  assert.equal(trabajo.active, true);
+  await assert.rejects(db.exec(trabajo.command), /Falta el token del despachador en Vault/);
+  await db.query('insert into vault.decrypted_secrets values ($1, $2)', ['techportfolio_notificaciones_job_token', tokenTarea]);
+
+  return async () => {
+    await db.exec(trabajo.command);
+    const { rows: [peticion] } = await db.query(`
+      select p.headers, p.url, p.timeout_millis, i.id
+      from net.peticiones p join public.invocaciones_notificaciones i on p.id = i.peticion_id
+      order by p.id desc limit 1
+    `);
+    assert.equal(new URL(peticion.url).pathname, '/functions/v1/notificar-solicitudes');
+    assert.equal(peticion.timeout_millis, 20_000);
+    assert.equal(peticion.headers['X-Notificaciones-Id'], peticion.id);
+    assert.equal(JSON.stringify(peticion.headers).includes(tokenTarea), false);
+    return peticion.headers;
+  };
+}
+
 test('registro y entrega usan PostgreSQL real, verifican al titular y protegen la cola', async t => {
-  const db = new PGlite();
+  const db = new PGlite({ extensions: { pgcrypto } });
   t.after(() => db.close());
   await db.exec('create role anon; create role authenticated; create role service_role bypassrls;');
   const aplicar = async archivo => db.exec(await readFile(new URL(`../supabase/migrations/${archivo}`, import.meta.url), 'utf8'));
@@ -70,16 +118,20 @@ test('registro y entrega usan PostgreSQL real, verifican al titular y protegen l
   const codigoAnterior = anterior.rows[0].codigo;
   await db.query("update public.solicitudes set estado = 'en_revision' where codigo = $1", [codigoAnterior]);
   await aplicar('20261124000100_autorizar_solicitudes.sql');
+  await aplicar('20261125000000_invocaciones_notificaciones.sql');
+  const encolarDespacho = await configurarCronLocal(db);
   assert.deepEqual((await db.query('select estado, disponible_en from public.notificaciones_solicitud')).rows,
     [{ estado: 'en_revision', disponible_en: null }]);
   for (const rol of ['anon', 'authenticated', 'service_role']) {
     await assert.rejects(comoRol(db, rol, 'select * from public.solicitudes'), /permission denied/);
     await assert.rejects(comoRol(db, rol, 'select * from public.notificaciones_solicitud'), /permission denied/);
+    await assert.rejects(comoRol(db, rol, 'select * from public.invocaciones_notificaciones'), /permission denied/);
     await assert.rejects(comoRol(db, rol, 'select public.registrar_solicitud(null,null,null,null,null,null,null)'), /permission denied/);
     await assert.rejects(comoRol(db, rol, "update public.solicitudes set estado = 'resuelta'"), /permission denied/);
     await assert.rejects(comoRol(db, rol, 'update public.notificaciones_solicitud set enviada_en = now()'), /permission denied/);
   }
   await assert.rejects(comoRol(db, 'authenticated', 'select public.reservar_notificacion(null)'), /permission denied/);
+  await assert.rejects(comoRol(db, 'authenticated', 'select public.consumir_invocacion_notificaciones(null)'), /permission denied/);
 
   const titular = identidad(correo);
   const sesiones = new Map([
@@ -96,10 +148,10 @@ test('registro y entrega usan PostgreSQL real, verifican al titular y protegen l
     body: JSON.stringify(datos)
   }), { cliente, clavesPublicas: new Set([claveCliente]), origenes: new Set([origen]) });
   const transmitidos = [];
-  const despacho = (token, payload = {}, respuesta = new Response('OK')) =>
+  const despacho = (headers, payload = {}, respuesta = new Response('OK')) =>
     procesarNotificacion(new Request('https://edge.example.test/notificar-solicitudes', {
       method: 'POST',
-      headers: { 'x-notificaciones-token': token },
+      headers,
       body: JSON.stringify(payload)
     }), {
       cliente, token: tokenTarea,
@@ -142,10 +194,18 @@ test('registro y entrega usan PostgreSQL real, verifican al titular y protegen l
   assert.equal((await call(consultaAnterior, 'valid.owner.token')).status, 404);
   assert.equal((await (await call(consultaAnterior, 'valid.legacy.token')).json()).estado, 'en_revision');
 
-  assert.equal((await despacho(claveCliente, datos)).status, 401);
+  assert.equal((await despacho({ 'x-notificaciones-token': claveCliente }, datos)).status, 401);
+  const vencida = await encolarDespacho();
+  await db.query("update public.invocaciones_notificaciones set creada_en = now() - interval '2 minutes' where id = $1",
+    [vencida['X-Notificaciones-Id']]);
+  assert.equal((await despacho(vencida)).status, 409);
   assert.equal(transmitidos.length, 0);
-  const procesos = await Promise.all([despacho(tokenTarea, { email: 'ajeno@example.test', estado: 'resuelta' }), despacho(tokenTarea)]);
-  assert.deepEqual((await Promise.all(procesos.map(respuesta => respuesta.json()))).map(dato => dato.procesadas).sort(), [0, 1]);
+  const firma = await encolarDespacho();
+  assert.equal((await despacho({ ...firma, 'X-Notificaciones-Firma': '0'.repeat(64) })).status, 401);
+  const intentos = await Promise.all([despacho(firma, { email: 'ajeno@example.test', estado: 'resuelta' }), despacho(firma)]);
+  assert.deepEqual(intentos.map(respuesta => respuesta.status).sort(), [200, 409]);
+  assert.equal(transmitidos.length, 1);
+  assert.deepEqual(await (await despacho(await encolarDespacho())).json(), { procesadas: 0 });
   assert.equal(transmitidos[0].template_id, 'template_72768ef');
   assert.equal(transmitidos[0].template_params.codigo, codigo);
   assert.equal(transmitidos[0].template_params.email, correo);
@@ -156,7 +216,7 @@ test('registro y entrega usan PostgreSQL real, verifican al titular y protegen l
   const actualizado = await (await call(consulta, 'valid.owner.token')).json();
   assert.equal(actualizado.estado, 'en_revision');
   assert.equal((await call(consulta, 'valid.other.token')).status, 404);
-  assert.deepEqual(await (await despacho(tokenTarea)).json(), { procesadas: 1, resultado: 'enviada' });
+  assert.deepEqual(await (await despacho(await encolarDespacho())).json(), { procesadas: 1, resultado: 'enviada' });
   assert.equal(transmitidos[1].template_params.codigo, codigo);
   assert.equal(transmitidos[1].template_params.estado, 'En revisión');
   assert.equal(Object.hasOwn(transmitidos[1].template_params, 'descripcion'), false);
@@ -164,12 +224,12 @@ test('registro y entrega usan PostgreSQL real, verifican al titular y protegen l
   const segunda = await (await call({ ...datos, id: randomUUID() }, 'valid.owner.token')).json();
   assert.match(segunda.codigo, uuidV4);
   assert.notEqual(segunda.codigo, codigo);
-  const rechazada = await despacho(tokenTarea, {}, new Response('Límite de solicitudes', { status: 429 }));
+  const rechazada = await despacho(await encolarDespacho(), {}, new Response('Límite de solicitudes', { status: 429 }));
   assert.deepEqual(await rechazada.json(), { procesadas: 1, resultado: 'rechazada' });
-  assert.deepEqual(await (await despacho(tokenTarea)).json(), { procesadas: 0 });
+  assert.deepEqual(await (await despacho(await encolarDespacho())).json(), { procesadas: 0 });
   await db.exec("update public.notificaciones_solicitud set disponible_en = now() where ultimo_resultado = 'rechazada'");
-  const incierta = await despacho(tokenTarea, {}, new Response('Error temporal', { status: 503 }));
+  const incierta = await despacho(await encolarDespacho(), {}, new Response('Error temporal', { status: 503 }));
   assert.deepEqual(await incierta.json(), { procesadas: 1, resultado: 'indeterminada' });
-  assert.deepEqual(await (await despacho(tokenTarea)).json(), { procesadas: 0 });
+  assert.deepEqual(await (await despacho(await encolarDespacho())).json(), { procesadas: 0 });
   assert.equal((await db.query('select count(*) as total from public.solicitudes')).rows[0].total, 3);
 });

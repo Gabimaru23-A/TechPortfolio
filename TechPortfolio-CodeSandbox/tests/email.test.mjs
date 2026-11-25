@@ -1,5 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import { readFile } from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
 import { contactoOficial } from '../src/data/site.js';
 import { configurarEmailJS, enviarNotificacion } from '../supabase/functions/notificar-solicitudes/email.mjs';
@@ -70,4 +71,25 @@ test('el proveedor puede rechazar el envío o dejarlo indeterminado', async () =
   assert.equal(await enviarNotificacion(configuracion, registro, async () => {
     throw new TypeError('Error de red simulado');
   }), 'indeterminada');
+});
+
+test('el ejemplo de EmailJS cierra ambas secciones y separa la información personal', async () => {
+  const readme = await readFile(new URL('../README.md', import.meta.url), 'utf8');
+  const html = readme.match(/```html\s+([\s\S]+?)```/)?.[1];
+  assert.ok(html);
+  const secciones = [];
+  for (const [, operador, nombre] of html.matchAll(/\{\{([#^/])(\w+)\}\}/g)) {
+    if (operador === '/') assert.equal(secciones.pop(), nombre);
+    else secciones.push(nombre);
+  }
+  assert.deepEqual(secciones, []);
+  const detalle = html.match(/\{\{#es_confirmacion\}\}([\s\S]+?)\{\{\/es_confirmacion\}\}/)?.[1];
+  const seguimiento = html.match(/\{\{\^es_confirmacion\}\}([\s\S]+?)\{\{\/es_confirmacion\}\}/)?.[1];
+  assert.ok(detalle && seguimiento);
+  assert.match(html, /\{\{codigo\}\}/);
+  assert.match(html, /\{\{estado\}\}/);
+  for (const dato of ['email', 'telefono', 'empresa', 'descripcion', 'fecha']) {
+    assert.ok(detalle.includes('{{' + dato + '}}'));
+    assert.equal(seguimiento.includes('{{' + dato + '}}'), false);
+  }
 });
