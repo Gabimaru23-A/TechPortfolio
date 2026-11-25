@@ -102,21 +102,40 @@ Al registrarse se guarda un UUID y se crea una sola confirmación en la cola. El
    ```
 
 3. En **Supabase → Edge Functions → Secrets**, añade `EMAILJS_SERVICE_ID`, `EMAILJS_PUBLIC_KEY`, `EMAILJS_PRIVATE_KEY` y `NOTIFICACIONES_JOB_TOKEN`. Genera el último con 32 bytes aleatorios y guarda el mismo valor en **Supabase → Vault → Create secret** con el nombre `techportfolio_notificaciones_job_token`. Mantén los secretos en Supabase. [Configuración de secretos](https://supabase.com/docs/guides/functions/secrets) · [Vault](https://supabase.com/docs/guides/database/vault)
-4. Habilita `pg_net` en **Supabase → Database → Extensions**. En **Supabase → Integrations → Cron → Jobs → Create job**, usa el nombre `techportfolio-notificaciones`, la frecuencia `* * * * *` y el tipo **SQL Snippet**. Guarda el siguiente SQL como contenido del trabajo. [Cron en Supabase](https://supabase.com/docs/guides/cron/quickstart) · [Invocar Edge Functions desde Cron](https://supabase.com/docs/guides/functions/schedule-functions)
+4. Habilita `http` en **Supabase → Database → Extensions**. En **Supabase → Integrations → Cron → Jobs**, usa el trabajo `techportfolio-notificaciones`, la frecuencia `* * * * *` y el tipo **SQL Snippet**. Cron lee el token de Vault y lo envía en la cabecera de una petición HTTPS directa. [Cron en Supabase](https://supabase.com/docs/guides/cron/quickstart) · [Extensión HTTP de Supabase](https://supabase.com/docs/guides/database/extensions/http)
 
    ```sql
-   select net.http_post(
-     url := 'https://zuezuzibfkodtjnvlhzw.supabase.co/functions/v1/notificar-solicitudes',
-     headers := jsonb_build_object('Content-Type', 'application/json', 'X-Notificaciones-Token', decrypted_secret),
-     body := '{}'::jsonb,
-     timeout_milliseconds := 20000
-   )
-   from vault.decrypted_secrets
-   where name = 'techportfolio_notificaciones_job_token'
-     and octet_length(decrypted_secret) >= 32;
+   do $despacho$
+   declare
+     token text;
+     codigo_http integer;
+   begin
+     select decrypted_secret into token
+     from vault.decrypted_secrets
+     where name = 'techportfolio_notificaciones_job_token';
+
+     if token is null or octet_length(token) < 32 then
+       return;
+     end if;
+
+     perform set_config('http.curlopt_timeout_ms', '20000', true);
+     select respuesta.status into codigo_http
+     from extensions.http((
+       'POST',
+       'https://zuezuzibfkodtjnvlhzw.supabase.co/functions/v1/notificar-solicitudes',
+       array[extensions.http_header('X-Notificaciones-Token', token)],
+       'application/json',
+       '{}'
+     )::extensions.http_request) respuesta;
+
+     if codigo_http is distinct from 200 then
+       raise exception 'El despachador respondió HTTP %', codigo_http;
+     end if;
+   end;
+   $despacho$;
    ```
 
-Desde **Table Editor → public → solicitudes**, el equipo autorizado puede cambiar `estado` a `recibida`, `en_revision`, `en_progreso`, `resuelta` o `cerrada`. El trabajo reserva y procesa un aviso por ejecución. Comprueba el historial en **Cron → Jobs → techportfolio-notificaciones**. Un ciclo exitoso de Cron sin token en Vault aún no invoca la función. La cola registra `enviada_en` cuando EmailJS lo acepta. Los rechazos explícitos se reintentan hasta seis intentos. Si la entrega es indeterminada o hay una reserva interrumpida, confirma el resultado en **EmailJS → Email History** antes de liberar la reserva o volver a programar el aviso desde **Supabase → Table Editor → notificaciones_solicitud**.
+Desde **Table Editor → public → solicitudes**, el equipo autorizado puede cambiar `estado` a `recibida`, `en_revision`, `en_progreso`, `resuelta` o `cerrada`. El trabajo reserva y procesa un aviso por ejecución. Comprueba el historial en **Cron → Jobs → techportfolio-notificaciones**. Cada ciclo necesita un token en Vault para invocar la función. La cola registra `enviada_en` cuando EmailJS lo acepta. Los rechazos explícitos se reintentan hasta seis intentos. Si la entrega es indeterminada o hay una reserva interrumpida, confirma el resultado en **EmailJS → Email History** antes de liberar la reserva o volver a programar el aviso desde **Supabase → Table Editor → notificaciones_solicitud**.
 
 ### Prueba de extremo a extremo
 
