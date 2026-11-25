@@ -94,6 +94,10 @@ Al registrarse se guarda un UUID y se crea una sola confirmación en la cola. El
    <p>Teléfono: {{telefono}}</p>
    <p>Empresa: {{empresa}}</p>
    <p>Descripción: {{descripcion}}</p>
+   {{#fecha}}<p>Confirmación emitida el {{fecha}}.</p>{{/fecha}}
+   {{/es_confirmacion}}
+   {{^es_confirmacion}}
+   <p>Consulta las novedades en <a href="https://gabimaru23-a.github.io/TechPortfolio/#/contacto">Contacto de TechPortfolio</a> con tu código de seguimiento y tu correo verificado.</p>
    {{/es_confirmacion}}
    ```
 
@@ -104,13 +108,15 @@ Al registrarse se guarda un UUID y se crea una sola confirmación en la cola. El
    select net.http_post(
      url := 'https://zuezuzibfkodtjnvlhzw.supabase.co/functions/v1/notificar-solicitudes',
      headers := jsonb_build_object('Content-Type', 'application/json', 'X-Notificaciones-Token', decrypted_secret),
-     body := '{}'::jsonb
+     body := '{}'::jsonb,
+     timeout_milliseconds := 20000
    )
    from vault.decrypted_secrets
-   where name = 'techportfolio_notificaciones_job_token';
+   where name = 'techportfolio_notificaciones_job_token'
+     and octet_length(decrypted_secret) >= 32;
    ```
 
-Desde **Table Editor → public → solicitudes**, el equipo autorizado puede cambiar `estado` a `recibida`, `en_revision`, `en_progreso`, `resuelta` o `cerrada`. El trabajo reserva y procesa un aviso por ejecución. Registra `enviada_en` cuando EmailJS lo acepta. Los rechazos explícitos se reintentan hasta seis intentos. Si la entrega es indeterminada o hay una reserva interrumpida, confirma el resultado en **EmailJS → Email History** antes de liberar la reserva o volver a programar el aviso desde **Supabase → Table Editor → notificaciones_solicitud**.
+Desde **Table Editor → public → solicitudes**, el equipo autorizado puede cambiar `estado` a `recibida`, `en_revision`, `en_progreso`, `resuelta` o `cerrada`. El trabajo reserva y procesa un aviso por ejecución. Comprueba el historial en **Cron → Jobs → techportfolio-notificaciones**. Un ciclo exitoso de Cron sin token en Vault aún no invoca la función. La cola registra `enviada_en` cuando EmailJS lo acepta. Los rechazos explícitos se reintentan hasta seis intentos. Si la entrega es indeterminada o hay una reserva interrumpida, confirma el resultado en **EmailJS → Email History** antes de liberar la reserva o volver a programar el aviso desde **Supabase → Table Editor → notificaciones_solicitud**.
 
 ### Prueba de extremo a extremo
 

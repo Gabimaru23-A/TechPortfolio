@@ -238,6 +238,33 @@ test('el seguimiento requiere una cuenta verificada y muestra solo el estado', a
   ]);
 });
 
+test('una sesión vencida exige una verificación nueva y conserva el intento', async ({ page, context, baseURL }) => {
+  const { registros, auth } = await simularSupabase(context, baseURL, (_, numero) =>
+    numero === 1 ? { status: 401, json: { error: 'correo_no_verificado' } } : { json: { codigo } });
+  await page.goto('/#/contacto');
+  const formulario = page.getByRole('form', { name: 'Describe tu proyecto' });
+  const enviar = formulario.getByRole('button', { name: 'Enviar solicitud' });
+  const estado = formulario.getByRole('status');
+  await rellenar(formulario, valores);
+  await verificar(formulario);
+  await expect(formulario.getByText('Correo verificado.')).toBeVisible();
+
+  await enviar.click();
+  await expect(estado).toContainText('Verifica el correo de esta solicitud');
+  await expect(formulario.getByLabel('Código de verificación')).toHaveCount(0);
+  await expect(formulario.getByLabel('Descripción del proyecto')).toHaveValue(valores['Descripción del proyecto']);
+  await enviar.click();
+  await expect(estado).toContainText('Verifica tu correo');
+  expect(registros).toHaveLength(1);
+
+  await verificar(formulario);
+  await expect(formulario.getByText('Correo verificado.')).toBeVisible();
+  await enviar.click();
+  await expect(estado).toContainText(codigo);
+  expect(registros).toEqual([registros[0], registros[0]]);
+  expect(auth.filter(evento => evento.ruta === '/auth/v1/verify')).toHaveLength(2);
+});
+
 test.describe('contacto móvil', () => {
   test.use({ viewport: { width: 375, height: 812 }, isMobile: true, hasTouch: true });
 

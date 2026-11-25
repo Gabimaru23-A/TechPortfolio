@@ -47,9 +47,11 @@ test('EmailJS usa el UUID y los datos persistidos, solo la confirmación contien
   assert.equal(await enviarNotificacion(configuracion, registro, transportista), 'enviada');
   assert.equal(await enviarNotificacion(configuracion, { ...registro, tipo: 'estado', estado: 'en_revision' }, transportista), 'enviada');
   const comunes = { email: registro.correo, nombre: registro.nombre, apellidos: registro.apellidos, codigo: registro.codigo };
+  const { fecha } = peticiones[0].template_params;
+  assert.match(fecha, /^\d{1,2} de [a-z]+ de \d{4}$/);
   assert.deepEqual(peticiones.map(peticion => peticion.template_params), [
     { ...comunes, estado: 'Recibida', asunto: 'TechPortfolio · Solicitud recibida', es_confirmacion: true,
-      telefono: registro.telefono, descripcion: registro.descripcion, empresa: 'No aplica' },
+      telefono: registro.telefono, descripcion: registro.descripcion, empresa: 'No aplica', fecha },
     { ...comunes, estado: 'En revisión', asunto: 'TechPortfolio · Actualización de solicitud', es_confirmacion: false }
   ]);
   for (const peticion of peticiones) {

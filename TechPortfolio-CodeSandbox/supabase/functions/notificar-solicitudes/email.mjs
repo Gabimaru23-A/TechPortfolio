@@ -1,6 +1,8 @@
 import { estados } from '../_shared/estados.mjs';
 import { uuidV4 } from '../_shared/validar-contacto.mjs';
 
+const formatoFecha = new Intl.DateTimeFormat('es-CO', { dateStyle: 'long', timeZone: 'America/Bogota' });
+
 export function configurarEmailJS(env) {
   const serviceId = env.EMAILJS_SERVICE_ID?.trim();
   const publicKey = env.EMAILJS_PUBLIC_KEY?.trim();
@@ -26,6 +28,7 @@ export async function enviarNotificacion(configuracion, registro, solicitar = fe
     parametros.telefono = registro.telefono;
     parametros.descripcion = registro.descripcion;
     parametros.empresa = registro.empresa || 'No aplica';
+    parametros.fecha = formatoFecha.format(new Date());
   }
 
   try {

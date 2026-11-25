@@ -38,7 +38,12 @@ export default function VerificacionCorreo({ correo, verificado, alVerificar, de
 
   function confirmar() {
     if (!codigoValido) return;
-    return ejecutar('verificar', async () => alVerificar(await verificarCorreo(correo, codigo.trim())));
+    return ejecutar('verificar', async () => {
+      const sesion = await verificarCorreo(correo, codigo.trim());
+      setCodigo('');
+      setSolicitado(false);
+      alVerificar(sesion);
+    });
   }
 
   if (verificado) return <p className="success">Correo verificado.</p>;
