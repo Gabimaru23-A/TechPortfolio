@@ -104,7 +104,7 @@ async function simularSupabase(context, baseURL, responder = () => ({ json: { co
 
 async function solicitarEnlace(formulario) {
   await formulario.getByRole('button', { name: /^(Confirmar mi correo|Reenviar enlace)$/ }).click();
-  await expect(formulario.getByText('Te enviamos un enlace de confirmación.', { exact: false })).toBeVisible();
+  await expect(formulario.getByText('Supabase aceptó la solicitud del enlace.', { exact: false })).toBeVisible();
 }
 
 async function abrirEnlace(page, enlace) {
@@ -252,7 +252,7 @@ for (const formato of ['segundos', 'fecha', 'sin cabecera']) {
     await boton.click();
     await expect(formulario.getByText('Has solicitado varios enlaces de confirmación. Por seguridad, debes esperar antes de solicitar otro.')).toBeVisible();
     await expect(formulario.getByText(`Podrás solicitar otro enlace en ${espera} segundos.`)).toBeVisible();
-    await expect(formulario.getByText('Te enviamos un enlace de confirmación.', { exact: false })).toHaveCount(0);
+    await expect(formulario.getByText('Supabase aceptó la solicitud del enlace.', { exact: false })).toHaveCount(0);
     await page.reload();
     await entrada.fill(correo);
     await expect(boton).toBeDisabled();
@@ -264,6 +264,29 @@ for (const formato of ['segundos', 'fecha', 'sin cabecera']) {
     expect(auth).toHaveLength(1);
   });
 }
+
+test('informa cuando el proveedor rechaza la dirección y permite reintentar tras corregir su configuración', async ({ page, context, baseURL }) => {
+  await simularSupabase(context, baseURL);
+  let intentos = 0;
+  await context.route(url => url.origin === origenSupabase && url.pathname === '/auth/v1/otp', route => {
+    if (route.request().method() !== 'POST' || ++intentos > 1) return route.fallback();
+    return route.fulfill({
+      status: 422,
+      json: { error_code: 'email_address_not_authorized', msg: 'Email address not authorized' },
+      headers: { 'access-control-allow-origin': baseURL, 'x-supabase-api-version': '2024-01-01' }
+    });
+  });
+  await page.goto('/#/contacto');
+  const formulario = solicitud(page);
+  await formulario.getByLabel('Correo electrónico').fill(correo);
+  const boton = formulario.getByRole('button', { name: 'Confirmar mi correo' });
+  await boton.click();
+  await expect(formulario.getByText('El servicio de correo aún no puede enviar enlaces a esta dirección. Contacta con TechPortfolio.')).toBeVisible();
+  await expect(boton).toBeEnabled();
+  await boton.click();
+  await expect(formulario.getByText('Supabase aceptó la solicitud del enlace.', { exact: false })).toBeVisible();
+  expect(intentos).toBe(2);
+});
 
 test('una cuenta existente solicita un solo enlace aunque pulse dos veces o cambie de pestaña', async ({ page, context, baseURL }) => {
   const { auth, enlaceDe } = await simularSupabase(context, baseURL, undefined, new Map([

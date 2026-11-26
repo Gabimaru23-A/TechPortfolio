@@ -27,7 +27,7 @@ export default function VerificacionCorreo({ correo, verificado, tipo, obtenerBo
     try {
       await enviarEnlaceCorreo(correo, tipo, obtenerBorrador());
       setSolicitado(true);
-      setAviso({ mensaje: 'Te enviamos un enlace de confirmación. Ábrelo para volver a TechPortfolio.' });
+      setAviso({ mensaje: 'Supabase aceptó la solicitud del enlace. Revisa tu correo, incluida la carpeta de spam. Si no llega, contacta con TechPortfolio.' });
     } catch (error) {
       setAviso({ error: true, mensaje: error.message });
     } finally {

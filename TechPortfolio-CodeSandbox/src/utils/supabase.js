@@ -3,7 +3,7 @@ import { normalizarCorreo, uuidV4 } from '../../supabase/functions/_shared/valid
 import { estados } from '../../supabase/functions/_shared/estados.mjs';
 import { guardarBorrador, leerBorrador } from './borradorContacto.js';
 import { configurarSupabase } from './supabase-config.js';
-import { guardarEsperaCorreo, intervaloCorreo, leerRetryAfter, proximoEnlaceCorreo } from './esperaCorreo.js';
+import { guardarEsperaCorreo, intervaloCorreo, leerRetryAfter, liberarEsperaCorreo, proximoEnlaceCorreo } from './esperaCorreo.js';
 
 const { configuracion } = configurarSupabase({
   VITE_SUPABASE_URL: import.meta.env.VITE_SUPABASE_URL,
@@ -73,6 +73,7 @@ const cliente = configuracion ? createClient(configuracion.url, configuracion.cl
 export const seguimientoDisponible = Boolean(cliente);
 const enlaceInvalido = 'El enlace no es válido, venció o ya se utilizó. Solicita uno nuevo.';
 const avisoLimite = 'Has solicitado varios enlaces de confirmación. Por seguridad, debes esperar antes de solicitar otro.';
+const avisoEspera = 'Espera a que termine el contador antes de solicitar otro enlace.';
 
 export class CorreoNoVerificado extends Error {
   constructor() {
@@ -81,7 +82,7 @@ export class CorreoNoVerificado extends Error {
 }
 
 async function solicitarEnlace(email, tipo, borrador) {
-  if (proximoEnlaceCorreo() > Date.now()) throw new Error(avisoLimite);
+  if (proximoEnlaceCorreo() > Date.now()) throw new Error(avisoEspera);
 
   await guardarBorrador(email, tipo, borrador).catch(() => {});
   const redirect = new URL(import.meta.env.BASE_URL, window.location.href);
@@ -93,7 +94,13 @@ async function solicitarEnlace(email, tipo, borrador) {
     email, options: { shouldCreateUser: true, emailRedirectTo: redirect.href }
   }).catch(() => null);
   if (respuesta && !respuesta.error) return;
-  if (limiteDetectado || respuesta?.error?.status === 429) throw new Error(avisoLimite);
+  if (limiteDetectado || respuesta?.error?.status === 429 ||
+      respuesta?.error?.code === 'over_email_send_rate_limit' ||
+      respuesta?.error?.code === 'over_request_rate_limit') throw new Error(avisoLimite);
+  liberarEsperaCorreo();
+  if (respuesta?.error?.code === 'email_address_not_authorized') {
+    throw new Error('El servicio de correo aún no puede enviar enlaces a esta dirección. Contacta con TechPortfolio.');
+  }
   throw new Error('No pudimos enviar el enlace de confirmación. Intenta de nuevo más tarde.');
 }
 

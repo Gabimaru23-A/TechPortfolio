@@ -33,6 +33,16 @@ export function guardarEsperaCorreo(venceEn) {
   window.dispatchEvent(new Event(cambio));
 }
 
+export function liberarEsperaCorreo() {
+  venceEnMemoria = 0;
+  try {
+    localStorage.removeItem(clave);
+  } catch {
+    // El contador en memoria ya se ha liberado.
+  }
+  window.dispatchEvent(new Event(cambio));
+}
+
 export function leerRetryAfter(valor, ahora = Date.now()) {
   if (!valor?.trim()) return 0;
   const plazo = /^\d+$/.test(valor.trim()) ? ahora + Number(valor) * 1000 : Date.parse(valor);
