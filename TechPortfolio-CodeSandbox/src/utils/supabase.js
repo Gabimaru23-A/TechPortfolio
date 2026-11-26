@@ -1,6 +1,7 @@
 import { createClient, FunctionsHttpError } from '@supabase/supabase-js';
 import { normalizarCorreo, uuidV4 } from '../../supabase/functions/_shared/validar-contacto.mjs';
 import { estados } from '../../supabase/functions/_shared/estados.mjs';
+import { guardarBorrador, leerBorrador } from './borradorContacto.js';
 import { configurarSupabase } from './supabase-config.js';
 
 const { configuracion } = configurarSupabase({
@@ -8,34 +9,134 @@ const { configuracion } = configurarSupabase({
   VITE_SUPABASE_PUBLISHABLE_KEY: import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY
 });
 
+const memoriaAuth = new Map();
+const almacenamientoAuth = {
+  getItem(clave) {
+    if (!clave.endsWith('-code-verifier')) return memoriaAuth.get(clave) ?? null;
+    try {
+      const entrada = JSON.parse(localStorage.getItem(clave) ?? 'null');
+      if (entrada?.venceEn > Date.now()) return entrada.valor;
+      if (entrada) localStorage.removeItem(clave);
+    } catch {
+      return memoriaAuth.get(clave) ?? null;
+    }
+    return null;
+  },
+  setItem(clave, valor) {
+    memoriaAuth.set(clave, valor);
+    if (!clave.endsWith('-code-verifier')) return;
+    try {
+      localStorage.setItem(clave, JSON.stringify({ valor, venceEn: Date.now() + 3_600_000 }));
+    } catch {
+      // Si el almacenamiento está bloqueado, queda disponible para esta página.
+    }
+  },
+  removeItem(clave) {
+    memoriaAuth.delete(clave);
+    if (!clave.endsWith('-code-verifier')) return;
+    try {
+      localStorage.removeItem(clave);
+    } catch {
+      // La copia en memoria ya se eliminó.
+    }
+  }
+};
+
 const cliente = configuracion ? createClient(configuracion.url, configuracion.clave, {
-  auth: { persistSession: false, autoRefreshToken: false, detectSessionInUrl: false }
+  auth: {
+    flowType: 'pkce',
+    persistSession: true,
+    storage: almacenamientoAuth,
+    autoRefreshToken: false,
+    detectSessionInUrl: false
+  }
 }) : null;
 export const seguimientoDisponible = Boolean(cliente);
+const proximoEnvio = new Map();
+const enlaceInvalido = 'El enlace no es válido, venció o ya se utilizó. Solicita uno nuevo.';
 
 export class CorreoNoVerificado extends Error {
   constructor() {
-    super('Verifica el correo de esta solicitud para continuar.');
+    super('Confirma el correo de esta solicitud para continuar.');
   }
 }
 
-export async function enviarCodigoCorreo(correo) {
-  const { error } = await cliente.auth.signInWithOtp({
-    email: normalizarCorreo(correo),
-    options: { shouldCreateUser: true }
-  });
-  if (error) throw new Error('No pudimos enviar el código de verificación. Intenta de nuevo más tarde.');
+export function proximoEnlaceCorreo(correo) {
+  return proximoEnvio.get(normalizarCorreo(correo)) ?? 0;
 }
 
-export async function verificarCorreo(correo, codigo) {
+export async function enviarEnlaceCorreo(correo, tipo, borrador) {
   const email = normalizarCorreo(correo);
-  const { data, error } = await cliente.auth.verifyOtp({ email, token: codigo, type: 'email' });
-  const sesion = data?.session;
-  if (error || !sesion?.access_token || !sesion.expires_at ||
-      !data.user?.email || normalizarCorreo(data.user.email) !== email) {
-    throw new Error('El código de verificación es incorrecto o venció.');
+  const ahora = Date.now();
+  if (proximoEnlaceCorreo(email) > ahora) throw new Error('Espera antes de solicitar otro enlace.');
+
+  for (const [direccion, vence] of proximoEnvio) {
+    if (vence <= ahora) proximoEnvio.delete(direccion);
   }
-  return { correo: email, token: sesion.access_token, venceEn: sesion.expires_at };
+  proximoEnvio.set(email, ahora + 60_000);
+  await guardarBorrador(email, tipo, borrador).catch(() => {});
+  const redirect = new URL(import.meta.env.BASE_URL, window.location.href);
+  redirect.hash = '';
+  redirect.search = '';
+  const respuesta = await cliente.auth.signInWithOtp({
+    email, options: { shouldCreateUser: true, emailRedirectTo: redirect.href }
+  }).catch(() => null);
+  if (respuesta && !respuesta.error) return;
+  if (respuesta?.error?.status === 429) {
+    proximoEnvio.set(email, Date.now() + 60_000);
+    throw new Error('Supabase limitó el reenvío. Espera antes de solicitar otro enlace.');
+  }
+  proximoEnvio.delete(email);
+  throw new Error('No pudimos enviar el enlace de confirmación. Intenta de nuevo más tarde.');
+}
+
+async function completarConfirmacion(hash, codigo) {
+  if (!cliente) return { error: 'El servicio de confirmación no está disponible.' };
+
+  try {
+    const { data, error } = hash
+      ? await cliente.auth.verifyOtp({ token_hash: hash, type: 'email' })
+      : await cliente.auth.exchangeCodeForSession(codigo);
+    if (error?.name === 'AuthPKCECodeVerifierMissingError') {
+      return { error: 'Este enlace debe abrirse en el mismo navegador donde lo solicitaste. Pide uno nuevo en este dispositivo para continuar.' };
+    }
+    const sesion = data?.session;
+    const usuario = data?.user;
+    if (error || data?.redirectType === 'recovery' || !sesion?.access_token || !(sesion.expires_at > Date.now() / 1000) ||
+        !usuario?.email || !usuario.email_confirmed_at || usuario.is_anonymous) return { error: enlaceInvalido };
+
+    const correo = normalizarCorreo(usuario.email);
+    const [solicitud, seguimiento] = await Promise.all([
+      leerBorrador(correo, 'solicitud').catch(() => null),
+      leerBorrador(correo, 'seguimiento').catch(() => null)
+    ]);
+    return { sesion: { correo, token: sesion.access_token, venceEn: sesion.expires_at }, solicitud, seguimiento };
+  } catch {
+    return { error: enlaceInvalido };
+  }
+}
+
+export function procesarRetornoCorreo() {
+  const url = new URL(window.location.href);
+  const consulta = url.searchParams;
+  const fragmento = new URLSearchParams(url.hash.startsWith('#/') ? '' : url.hash.slice(1));
+  const retornoEnConsulta = consulta.has('token_hash') || consulta.has('code');
+  const retornoEnFragmento = fragmento.has('token_hash') || fragmento.has('code');
+  const parametros = retornoEnConsulta ? consulta : fragmento;
+  const hash = parametros.get('token_hash');
+  const codigo = parametros.get('code');
+  const error = consulta.has('error') || consulta.has('error_code') || fragmento.has('error') || fragmento.has('error_code');
+  const sesionAntigua = [consulta, fragmento].some(p => p.has('access_token') || p.has('refresh_token'));
+  if (!retornoEnConsulta && !retornoEnFragmento && !error && !sesionAntigua) return null;
+
+  window.history.replaceState(window.history.state, '', url.pathname + '#/contacto');
+  const valorValido = /^[\w-]{16,256}$/;
+  if (error || sesionAntigua || (retornoEnConsulta && retornoEnFragmento) ||
+      (hash && parametros.get('type') !== 'email') ||
+      Boolean(hash) === Boolean(codigo) || !valorValido.test(hash ?? codigo ?? '')) {
+    return Promise.resolve({ error: enlaceInvalido });
+  }
+  return completarConfirmacion(hash, codigo);
 }
 
 export function tokenVerificado(sesion, correo) {

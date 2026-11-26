@@ -1,5 +1,9 @@
 project_id = "techportfolio"
 
+[auth]
+site_url = "https://gabimaru23-a.github.io/TechPortfolio/"
+additional_redirect_urls = ["https://gabimaru23-a.github.io/TechPortfolio/", "http://localhost:5173/"]
+
 [functions.solicitudes]
 verify_jwt = false
 

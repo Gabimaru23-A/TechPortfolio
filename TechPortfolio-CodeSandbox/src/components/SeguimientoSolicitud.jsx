@@ -1,13 +1,14 @@
 import { useRef, useState } from 'react';
 import { normalizarCorreo } from '../../supabase/functions/_shared/validar-contacto.mjs';
 import VerificacionCorreo from './VerificacionCorreo.jsx';
+import { eliminarBorrador } from '../utils/borradorContacto.js';
 import { CorreoNoVerificado, consultarSolicitud, tokenVerificado } from '../utils/supabase.js';
 
 const formatoFecha = new Intl.DateTimeFormat('es-CO', { dateStyle: 'long' });
 
-export default function SeguimientoSolicitud({ sesion, alVerificar }) {
-  const [codigo, setCodigo] = useState('');
-  const [correo, setCorreo] = useState('');
+export default function SeguimientoSolicitud({ sesion, alVerificar, borrador }) {
+  const [codigo, setCodigo] = useState(borrador?.codigo ?? '');
+  const [correo, setCorreo] = useState(borrador?.correo ?? '');
   const [consultando, setConsultando] = useState(false);
   const [resultado, setResultado] = useState(null);
   const consultaEnCurso = useRef(false);
@@ -22,6 +23,7 @@ export default function SeguimientoSolicitud({ sesion, alVerificar }) {
     setResultado(null);
     try {
       setResultado(await consultarSolicitud(codigo.trim(), token));
+      eliminarBorrador(correo, 'seguimiento').catch(() => {});
     } catch (error) {
       if (error instanceof CorreoNoVerificado && token) {
         alVerificar(actual => actual?.token === token ? null : actual);
@@ -37,7 +39,7 @@ export default function SeguimientoSolicitud({ sesion, alVerificar }) {
     <form className="card contact-form seguimiento-form" aria-labelledby="titulo-seguimiento" onSubmit={consultar} noValidate>
       <div className="contact-form-heading">
         <h2 id="titulo-seguimiento">Consulta el estado de tu solicitud</h2>
-        <small>Usa el código de seguimiento y verifica el correo que registraste.</small>
+        <small>Usa el código de seguimiento y confirma el correo que registraste.</small>
       </div>
       <div className="form-field">
         <label htmlFor="seguimiento-codigo">Código de seguimiento</label>
@@ -52,7 +54,7 @@ export default function SeguimientoSolicitud({ sesion, alVerificar }) {
       </div>
       <VerificacionCorreo key={normalizarCorreo(correo)} correo={correo}
         verificado={Boolean(token)} deshabilitado={consultando}
-        alVerificar={nueva => { alVerificar(nueva); setResultado(null); }} />
+        tipo="seguimiento" obtenerBorrador={() => ({ codigo })} />
       <div className="contact-actions">
         <button type="submit" className="btn blue" disabled={consultando} aria-busy={consultando}>
           {consultando ? 'Consultando…' : 'Consultar estado'}

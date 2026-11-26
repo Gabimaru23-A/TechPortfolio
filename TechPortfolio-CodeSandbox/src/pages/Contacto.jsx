@@ -1,11 +1,12 @@
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { CheckCircle2, CircleAlert, Mail } from 'lucide-react';
 import PageHeading from '../components/PageHeading.jsx';
 import SeguimientoSolicitud from '../components/SeguimientoSolicitud.jsx';
 import VerificacionCorreo from '../components/VerificacionCorreo.jsx';
 import { contactoOficial, testimonios } from '../data/site.js';
 import { validarContacto } from '../utils/logic.js';
-import { normalizarCorreo } from '../../supabase/functions/_shared/validar-contacto.mjs';
+import { normalizarCorreo, uuidV4 } from '../../supabase/functions/_shared/validar-contacto.mjs';
+import { eliminarBorrador } from '../utils/borradorContacto.js';
 import { CorreoNoVerificado, registrarSolicitud, seguimientoDisponible, tokenVerificado } from '../utils/supabase.js';
 
 const inicial = { nombre: '', apellidos: '', correo: '', telefono: '', descripcion: '', empresa: '' };
@@ -35,14 +36,47 @@ function CampoContacto({ nombre, etiqueta, valor, error, cambiar, ayuda, multili
   );
 }
 
-export default function Contacto() {
+export default function Contacto({ retorno, alCompletarRetorno }) {
   const [formulario, setFormulario] = useState(inicial);
   const [errores, setErrores] = useState({});
   const [resultado, setResultado] = useState(null);
   const [enviando, setEnviando] = useState(false);
   const [sesion, setSesion] = useState(null);
+  const [errorConfirmacion, setErrorConfirmacion] = useState('');
+  const [borradorSeguimiento, setBorradorSeguimiento] = useState(null);
   const envioEnCurso = useRef(false);
   const intento = useRef(null);
+  const confirmando = Boolean(retorno);
+
+  useEffect(() => {
+    if (!retorno) return;
+    let actual = true;
+    retorno.then(confirmacion => {
+      if (!actual) return;
+      if (confirmacion.sesion) {
+        const { correo } = confirmacion.sesion;
+        const restaurado = { ...inicial, ...confirmacion.solicitud?.formulario, correo };
+        if (uuidV4.test(confirmacion.solicitud?.id ?? '')) {
+          intento.current = { id: confirmacion.solicitud.id, formulario: restaurado };
+        }
+        setSesion(confirmacion.sesion);
+        setFormulario(restaurado);
+        setBorradorSeguimiento({ correo, codigo: confirmacion.seguimiento?.codigo ?? '' });
+      } else {
+        setSesion(null);
+      }
+      setErrorConfirmacion(confirmacion.error ?? '');
+      alCompletarRetorno(null);
+    });
+    return () => { actual = false; };
+  }, [retorno, alCompletarRetorno]);
+
+  function prepararIntento() {
+    const mismosDatos = intento.current && Object.keys(inicial)
+      .every(campo => intento.current.formulario[campo] === formulario[campo]);
+    if (!mismosDatos) intento.current = { id: crypto.randomUUID(), formulario };
+    return intento.current;
+  }
 
   function cambiar(evento) {
     const { name, value } = evento.target;
@@ -53,7 +87,7 @@ export default function Contacto() {
 
   async function tramitarSolicitud(evento) {
     evento.preventDefault();
-    if (!seguimientoDisponible || envioEnCurso.current) return;
+    if (!seguimientoDisponible || envioEnCurso.current || confirmando) return;
 
     const erroresEncontrados = validarContacto(formulario);
     setErrores(erroresEncontrados);
@@ -67,7 +101,7 @@ export default function Contacto() {
 
     const token = tokenVerificado(sesion, formulario.correo);
     if (!token) {
-      setResultado({ mensaje: 'Verifica tu correo antes de enviar la solicitud.' });
+      setResultado({ mensaje: 'Confirma tu correo antes de enviar la solicitud.' });
       return;
     }
 
@@ -75,10 +109,8 @@ export default function Contacto() {
     setEnviando(true);
     setResultado(null);
     try {
-      const mismosDatos = intento.current && Object.keys(inicial)
-        .every(campo => intento.current.formulario[campo] === formulario[campo]);
-      if (!mismosDatos) intento.current = { id: crypto.randomUUID(), formulario };
-      const codigo = await registrarSolicitud(intento.current.id, formulario, token);
+      const codigo = await registrarSolicitud(prepararIntento().id, formulario, token);
+      eliminarBorrador(formulario.correo, 'solicitud').catch(() => {});
       setFormulario(inicial);
       intento.current = null;
       setResultado({ exito: true, codigo, mensaje: 'Solicitud registrada. La confirmación por correo quedó en cola.' });
@@ -94,7 +126,7 @@ export default function Contacto() {
   }
 
   function campo(nombre) {
-    return { nombre, valor: formulario[nombre], error: errores[nombre], cambiar, readOnly: enviando };
+    return { nombre, valor: formulario[nombre], error: errores[nombre], cambiar, readOnly: enviando || confirmando };
   }
 
   return (
@@ -117,6 +149,8 @@ export default function Contacto() {
             <h2 id="titulo-solicitud">Describe tu proyecto</h2>
             <small>Todos los campos salvo Empresa son obligatorios.</small>
           </div>
+          {confirmando && <p role="status">Confirmando tu correo…</p>}
+          {errorConfirmacion && <p className="form-warning" role="alert">{errorConfirmacion}</p>}
           {!seguimientoDisponible && (
             <div id="contacto-configuracion" className="form-warning">
               El registro de solicitudes no está disponible. Puedes escribir al correo oficial.
@@ -135,11 +169,11 @@ export default function Contacto() {
           <CampoContacto {...campo('descripcion')} etiqueta="Descripción del proyecto" multilinea rows={5} />
           {seguimientoDisponible && (
             <VerificacionCorreo key={normalizarCorreo(formulario.correo)} correo={formulario.correo}
-              verificado={Boolean(tokenVerificado(sesion, formulario.correo))} deshabilitado={enviando}
-              alVerificar={nueva => { setSesion(nueva); setResultado(null); }} />
+              verificado={Boolean(tokenVerificado(sesion, formulario.correo))} deshabilitado={enviando || confirmando}
+              tipo="solicitud" obtenerBorrador={prepararIntento} />
           )}
           <div className="contact-actions">
-            <button type="submit" className="btn blue" disabled={enviando || !seguimientoDisponible} aria-busy={enviando} aria-describedby={seguimientoDisponible ? undefined : 'contacto-configuracion'}>
+            <button type="submit" className="btn blue" disabled={enviando || confirmando || !seguimientoDisponible} aria-busy={enviando} aria-describedby={seguimientoDisponible ? undefined : 'contacto-configuracion'}>
               {enviando ? 'Enviando solicitud…' : 'Enviar solicitud'}
             </button>
             <div role="status">
@@ -159,7 +193,8 @@ export default function Contacto() {
           </div>
         </form>
       </div>
-      {seguimientoDisponible && <SeguimientoSolicitud sesion={sesion} alVerificar={setSesion} />}
+      {seguimientoDisponible && !confirmando &&
+        <SeguimientoSolicitud sesion={sesion} alVerificar={setSesion} borrador={borradorSeguimiento} />}
       <section aria-labelledby="testimonios-titulo">
         <div className="timeline-heading">
           <h2 id="testimonios-titulo">Testimonios</h2>

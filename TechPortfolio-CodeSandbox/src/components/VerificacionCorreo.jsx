@@ -1,87 +1,54 @@
-import { useId, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { esCorreoValido } from '../../supabase/functions/_shared/validar-contacto.mjs';
-import { enviarCodigoCorreo, verificarCorreo } from '../utils/supabase.js';
+import { enviarEnlaceCorreo, proximoEnlaceCorreo } from '../utils/supabase.js';
 
-export default function VerificacionCorreo({ correo, verificado, alVerificar, deshabilitado }) {
-  const id = useId();
-  const [codigo, setCodigo] = useState('');
+export default function VerificacionCorreo({ correo, verificado, tipo, obtenerBorrador, deshabilitado }) {
   const [solicitado, setSolicitado] = useState(false);
-  const [operacion, setOperacion] = useState(null);
+  const [enviando, setEnviando] = useState(false);
   const [aviso, setAviso] = useState(null);
+  const [ahora, setAhora] = useState(Date.now);
   const enCurso = useRef(false);
-  const codigoValido = /^\d{6,10}$/.test(codigo.trim());
+  const segundos = Math.max(0, Math.ceil((proximoEnlaceCorreo(correo) - ahora) / 1000));
+  const esperando = segundos > 0;
 
-  async function ejecutar(accion, tarea) {
-    if (enCurso.current || deshabilitado) return;
+  useEffect(() => {
+    if (!esperando) return;
+    const reloj = window.setInterval(() => setAhora(Date.now()), 1000);
+    return () => window.clearInterval(reloj);
+  }, [esperando]);
+
+  async function enviar() {
+    if (enCurso.current || deshabilitado || esperando || !esCorreoValido(correo.trim())) return;
     enCurso.current = true;
-    setOperacion(accion);
+    setEnviando(true);
     setAviso(null);
     try {
-      await tarea();
+      await enviarEnlaceCorreo(correo, tipo, obtenerBorrador());
+      setSolicitado(true);
+      setAviso({ mensaje: 'Te enviamos un enlace de confirmación. Ábrelo para volver a TechPortfolio.' });
     } catch (error) {
       setAviso({ error: true, mensaje: error.message });
     } finally {
       enCurso.current = false;
-      setOperacion(null);
+      setAhora(Date.now());
+      setEnviando(false);
     }
   }
 
-  function enviar() {
-    if (!esCorreoValido(correo.trim())) return;
-    return ejecutar('enviar', async () => {
-      await enviarCodigoCorreo(correo);
-      setCodigo('');
-      setSolicitado(true);
-      setAviso({ mensaje: 'Revisa tu bandeja para obtener el código de verificación.' });
-    });
-  }
-
-  function confirmar() {
-    if (!codigoValido) return;
-    return ejecutar('verificar', async () => {
-      const sesion = await verificarCorreo(correo, codigo.trim());
-      setCodigo('');
-      setSolicitado(false);
-      alVerificar(sesion);
-    });
-  }
-
-  if (verificado) return <p className="success">Correo verificado.</p>;
+  if (verificado) return <p className="success">Correo confirmado correctamente.</p>;
 
   return (
     <div className="verificacion-correo">
-      <small>Verifica que puedes recibir mensajes en este correo.</small>
       <div>
-        <button type="button" className="btn" disabled={deshabilitado || Boolean(operacion) || !esCorreoValido(correo.trim())}
-          onClick={enviar}>
-          {solicitado ? 'Reenviar código de verificación' : 'Enviar código de verificación'}
+        <button type="button" className="btn" onClick={enviar}
+          disabled={deshabilitado || enviando || esperando || !esCorreoValido(correo.trim())}>
+          {solicitado ? 'Reenviar enlace' : 'Confirmar mi correo'}
         </button>
       </div>
-      {solicitado && (
-        <>
-          <div className="form-field">
-            <label htmlFor={id}>Código de verificación</label>
-            <input id={id} inputMode="numeric" autoComplete="one-time-code" maxLength={10}
-              value={codigo} readOnly={deshabilitado || Boolean(operacion)}
-              onChange={evento => setCodigo(evento.target.value)}
-              onKeyDown={evento => {
-                if (evento.key === 'Enter') {
-                  evento.preventDefault();
-                  confirmar();
-                }
-              }} />
-          </div>
-          <div>
-            <button type="button" className="btn" onClick={confirmar}
-              disabled={deshabilitado || Boolean(operacion) || !codigoValido}>Verificar correo</button>
-          </div>
-        </>
-      )}
       <small aria-live="polite" className={aviso?.error ? 'error' : undefined}>
-        {operacion === 'enviar' && 'Enviando código…'}
-        {operacion === 'verificar' && 'Verificando correo…'}
-        {aviso?.mensaje}
+        {enviando ? 'Enviando enlace…' : aviso?.mensaje}
       </small>
+      {esperando && !enviando && <small>Puedes pedir otro enlace en {segundos} s.</small>}
     </div>
   );
 }

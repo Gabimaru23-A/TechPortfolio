@@ -52,7 +52,7 @@ function clienteLocal(db, sesiones) {
   };
 }
 
-function identidad(correo, metodo = 'otp') {
+function identidad(correo, metodo = 'magiclink') {
   const id = randomUUID();
   return {
     user: { id, email: correo, email_confirmed_at: '2026-11-24T18:00:00Z' },
@@ -133,11 +133,11 @@ test('registro y entrega usan PostgreSQL real, verifican al titular y protegen l
   await assert.rejects(comoRol(db, 'authenticated', 'select public.reservar_notificacion(null)'), /permission denied/);
   await assert.rejects(comoRol(db, 'authenticated', 'select public.consumir_invocacion_notificaciones(null)'), /permission denied/);
 
-  const titular = identidad(correo);
+  const titular = identidad(correo, 'email/signup');
   const sesiones = new Map([
     ['valid.owner.token', titular],
     ['valid.other.token', identidad('otra-persona@example.test')],
-    ['valid.legacy.token', identidad(correoAnterior)],
+    ['valid.legacy.token', identidad(correoAnterior, 'otp')],
     ['valid.different.account', identidad(correo)],
     ['valid.password.token', identidad(correo, 'password')]
   ]);

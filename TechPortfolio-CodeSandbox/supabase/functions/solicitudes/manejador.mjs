@@ -1,6 +1,7 @@
 import { normalizarCorreo, uuidV4, validarContacto } from '../_shared/validar-contacto.mjs';
 
 const maximoBytes = 32_768;
+const metodosCorreo = new Set(['otp', 'magiclink', 'email/signup']);
 
 async function leerCuerpo(peticion) {
   const lector = peticion.body?.getReader();
@@ -39,7 +40,7 @@ async function solicitanteVerificado(cliente, peticion) {
   const correo = normalizarCorreo(user.email);
   if (verificacion.error || claims?.sub !== user.id || claims.role !== 'authenticated' ||
       typeof claims.email !== 'string' || normalizarCorreo(claims.email) !== correo ||
-      !Array.isArray(claims.amr) || !claims.amr.some(metodo => metodo.method === 'otp')) return null;
+      !Array.isArray(claims.amr) || !claims.amr.some(metodo => metodosCorreo.has(metodo?.method))) return null;
 
   return { id: user.id, correo };
 }
