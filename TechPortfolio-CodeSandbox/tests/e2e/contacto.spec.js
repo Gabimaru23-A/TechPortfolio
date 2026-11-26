@@ -140,7 +140,7 @@ test('valida los campos y enfoca el primer valor inválido', async ({ page, cont
     'Correo electrónico': 'correo-inválido', Teléfono: '202-555-0148'
   });
   await enviar(formulario).click();
-  await expect(formulario.getByLabel('Nombre', { exact: true })).toHaveAccessibleDescription('Usa hasta 20 letras, sin espacios.');
+  await expect(formulario.getByLabel('Nombre', { exact: true })).toHaveAccessibleDescription('Usa hasta 20 letras. Separa los nombres con un espacio.');
   await expect(formulario.getByLabel('Apellidos', { exact: true })).toHaveAttribute('aria-invalid', 'true');
   await expect(formulario.getByLabel('Correo electrónico', { exact: true })).toHaveAccessibleDescription('Escribe un correo con formato válido.');
   await expect(formulario.getByLabel('Teléfono', { exact: true })).toHaveAccessibleDescription('Usa solo números, sin espacios ni símbolos.');
@@ -227,6 +227,22 @@ test('limita el reenvío y muestra errores de enlace vencido y utilizado', async
   await page.goto(enlace);
   await expect(formulario.getByRole('alert')).toHaveText(enlaceInvalido);
   expect(registros).toHaveLength(0);
+});
+
+test('otro correo válido puede solicitar enlace durante la espera local del anterior', async ({ page, context, baseURL }) => {
+  const { auth } = await simularSupabase(context, baseURL);
+  await page.goto('/#/contacto');
+  const formulario = solicitud(page);
+  const entrada = formulario.getByLabel('Correo electrónico');
+  await entrada.fill(correo);
+  await solicitarEnlace(formulario);
+  await expect(formulario.getByRole('button', { name: 'Reenviar enlace' })).toBeDisabled();
+  await entrada.fill(otroCorreo);
+  await expect(formulario.getByRole('button', { name: 'Confirmar mi correo' })).toBeEnabled();
+  await solicitarEnlace(formulario);
+  expect(auth).toHaveLength(2);
+  await entrada.fill(correo);
+  await expect(formulario.getByRole('button', { name: 'Confirmar mi correo' })).toBeDisabled();
 });
 
 for (const formato of ['segundos', 'fecha', 'sin cabecera']) {

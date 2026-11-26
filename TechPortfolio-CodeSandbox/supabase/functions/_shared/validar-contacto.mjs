@@ -1,4 +1,4 @@
-const nombreValido = /^(?:\p{L}\p{M}*)+$/u;
+const nombreValido = /^(?:\p{L}\p{M}*)+(?: (?:\p{L}\p{M}*)+)*$/u;
 const parteLocalValida = /^[\p{L}\p{M}\p{N}!#$%&'*+/=?^_`{|}~-]+(?:\.[\p{L}\p{M}\p{N}!#$%&'*+/=?^_`{|}~-]+)*$/u;
 const etiquetaDominioValida = /^(?!-)[\p{L}\p{M}\p{N}-]{1,63}(?<!-)$/u;
 
@@ -28,7 +28,7 @@ export function validarContacto(formulario) {
     if (!valor.trim()) {
       errores[campo] = campo === 'nombre' ? 'Escribe tu nombre.' : 'Escribe tus apellidos.';
     } else if (valor.length > 80 || !nombreValido.test(valor) || (valor.match(/\p{L}/gu)?.length ?? 0) > 20) {
-      errores[campo] = 'Usa hasta 20 letras, sin espacios.';
+      errores[campo] = 'Usa hasta 20 letras. Separa los nombres con un espacio.';
     }
   }
 

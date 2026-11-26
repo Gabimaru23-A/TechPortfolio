@@ -10,7 +10,7 @@ import { eliminarBorrador } from '../utils/borradorContacto.js';
 import { CorreoNoVerificado, registrarSolicitud, seguimientoDisponible, tokenVerificado } from '../utils/supabase.js';
 
 const inicial = { nombre: '', apellidos: '', correo: '', telefono: '', descripcion: '', empresa: '' };
-const ayudaNombre = 'Hasta 20 letras, sin espacios.';
+const ayudaNombre = 'Hasta 20 letras. Puedes separar nombres con un espacio.';
 
 function CampoContacto({ nombre, etiqueta, valor, error, cambiar, ayuda, multilinea, ...atributos }) {
   const Entrada = multilinea ? 'textarea' : 'input';

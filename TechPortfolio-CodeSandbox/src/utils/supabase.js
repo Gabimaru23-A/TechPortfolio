@@ -54,9 +54,9 @@ const cliente = configuracion ? createClient(configuracion.url, configuracion.cl
         const reintentar = leerRetryAfter(respuesta.headers.get('Retry-After'), ahora);
         if (respuesta.status === 429) {
           limiteDetectado = true;
-          guardarEsperaCorreo(reintentar || ahora + intervaloCorreo);
+          await guardarEsperaCorreo('', reintentar || ahora + intervaloCorreo, true);
         } else if (reintentar) {
-          guardarEsperaCorreo(reintentar);
+          await guardarEsperaCorreo('', reintentar, true);
         }
       }
       return respuesta;
@@ -82,13 +82,13 @@ export class CorreoNoVerificado extends Error {
 }
 
 async function solicitarEnlace(email, tipo, borrador) {
-  if (proximoEnlaceCorreo() > Date.now()) throw new Error(avisoEspera);
+  if (await proximoEnlaceCorreo(email) > Date.now()) throw new Error(avisoEspera);
 
   await guardarBorrador(email, tipo, borrador).catch(() => {});
   const redirect = new URL(import.meta.env.BASE_URL, window.location.href);
   redirect.hash = '';
   redirect.search = '';
-  guardarEsperaCorreo(Date.now() + intervaloCorreo);
+  await guardarEsperaCorreo(email, Date.now() + intervaloCorreo);
   limiteDetectado = false;
   const respuesta = await cliente.auth.signInWithOtp({
     email, options: { shouldCreateUser: true, emailRedirectTo: redirect.href }
@@ -97,7 +97,7 @@ async function solicitarEnlace(email, tipo, borrador) {
   if (limiteDetectado || respuesta?.error?.status === 429 ||
       respuesta?.error?.code === 'over_email_send_rate_limit' ||
       respuesta?.error?.code === 'over_request_rate_limit') throw new Error(avisoLimite);
-  liberarEsperaCorreo();
+  await liberarEsperaCorreo(email);
   if (respuesta?.error?.code === 'email_address_not_authorized') {
     throw new Error('El servicio de correo aún no puede enviar enlaces a esta dirección. Contacta con TechPortfolio.');
   }

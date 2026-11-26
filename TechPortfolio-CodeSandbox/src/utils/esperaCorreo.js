@@ -1,19 +1,35 @@
-const clave = 'techportfolio-espera-enlace';
+import { normalizarCorreo } from '../../supabase/functions/_shared/validar-contacto.mjs';
+
+const prefijo = 'techportfolio-espera-enlace:';
+const global = prefijo + 'proveedor';
+const anterior = 'techportfolio-espera-enlace';
 const cambio = 'techportfolio:cambio-espera';
 export const intervaloCorreo = 90_000;
-let venceEnMemoria = 0;
+const memoria = new Map();
 
-export function proximoEnlaceCorreo() {
+async function claveCorreo(correo) {
+  const datos = new TextEncoder().encode(normalizarCorreo(correo));
+  const hash = await crypto.subtle.digest('SHA-256', datos);
+  return prefijo + Array.from(new Uint8Array(hash), byte => byte.toString(16).padStart(2, '0')).join('');
+}
+
+function leer(clave) {
+  let vence = memoria.get(clave) ?? 0;
   try {
-    return Math.max(venceEnMemoria, Number(localStorage.getItem(clave)) || 0);
+    vence = Math.max(vence, Number(localStorage.getItem(clave)) || 0);
   } catch {
-    return venceEnMemoria;
+    // El almacenamiento puede estar deshabilitado.
   }
+  return Number.isSafeInteger(vence) && vence > Date.now() ? vence : 0;
+}
+
+export async function proximoEnlaceCorreo(correo) {
+  return Math.max(leer(global), leer(await claveCorreo(correo)));
 }
 
 export function observarEsperaCorreo(actualizar) {
   function observarStorage(evento) {
-    if (evento.key === clave) actualizar();
+    if (evento.key?.startsWith(prefijo)) actualizar();
   }
   window.addEventListener('storage', observarStorage);
   window.addEventListener(cambio, actualizar);
@@ -23,22 +39,29 @@ export function observarEsperaCorreo(actualizar) {
   };
 }
 
-export function guardarEsperaCorreo(venceEn) {
-  venceEnMemoria = Math.max(proximoEnlaceCorreo(), venceEn);
+async function guardar(clave, venceEn) {
+  const fecha = Math.max(leer(clave), venceEn);
+  memoria.set(clave, fecha);
   try {
-    localStorage.setItem(clave, String(venceEnMemoria));
+    localStorage.setItem(clave, String(fecha));
+    localStorage.removeItem(anterior);
   } catch {
-    // El temporizador sigue disponible en la pestaña actual.
+    // La memoria mantiene el contador durante esta pestaña.
   }
   window.dispatchEvent(new Event(cambio));
 }
 
-export function liberarEsperaCorreo() {
-  venceEnMemoria = 0;
+export async function guardarEsperaCorreo(correo, venceEn, proveedor = false) {
+  await guardar(proveedor ? global : await claveCorreo(correo), venceEn);
+}
+
+export async function liberarEsperaCorreo(correo) {
+  const clave = await claveCorreo(correo);
+  memoria.delete(clave);
   try {
     localStorage.removeItem(clave);
   } catch {
-    // El contador en memoria ya se ha liberado.
+    // La memoria ya se ha liberado.
   }
   window.dispatchEvent(new Event(cambio));
 }

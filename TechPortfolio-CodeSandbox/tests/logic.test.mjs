@@ -36,8 +36,9 @@ const contactoValido = {
 
 test('nombre y apellidos admiten tildes y ñ hasta 20 letras', () => {
   assert.deepEqual(validarContacto({ ...contactoValido, nombre: 'A\u0301'.repeat(20) }), {});
+  assert.deepEqual(validarContacto({ ...contactoValido, nombre: 'Deiby Rodríguez', apellidos: 'De León' }), {});
   assert.ok(validarContacto({ ...contactoValido, nombre: 'Á'.repeat(21) }).nombre);
-  for (const apellido of ['De León', 'Muñoz8', 'Muñoz!', ' Muñoz', '\u0301Muñoz']) {
+  for (const apellido of ['De  León', 'Muñoz8', 'Muñoz!', ' Muñoz', '\u0301Muñoz']) {
     assert.ok(validarContacto({ ...contactoValido, apellidos: apellido }).apellidos);
   }
 });

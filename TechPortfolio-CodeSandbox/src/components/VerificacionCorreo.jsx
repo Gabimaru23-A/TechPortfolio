@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, useSyncExternalStore } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { esCorreoValido } from '../../supabase/functions/_shared/validar-contacto.mjs';
 import { observarEsperaCorreo, proximoEnlaceCorreo } from '../utils/esperaCorreo.js';
 import { enviarEnlaceCorreo } from '../utils/supabase.js';
@@ -7,20 +7,35 @@ export default function VerificacionCorreo({ correo, verificado, tipo, obtenerBo
   const [solicitado, setSolicitado] = useState(false);
   const [enviando, setEnviando] = useState(false);
   const [aviso, setAviso] = useState(null);
-  const [, setAhora] = useState(Date.now);
+  const [ahora, setAhora] = useState(Date.now);
+  const [venceEn, setVenceEn] = useState(0);
+  const [comprobando, setComprobando] = useState(true);
   const enCurso = useRef(false);
-  const venceEn = useSyncExternalStore(observarEsperaCorreo, proximoEnlaceCorreo);
-  const segundos = Math.max(0, Math.ceil((venceEn - Date.now()) / 1000));
+  const segundos = Math.max(0, Math.ceil((venceEn - ahora) / 1000));
   const esperando = segundos > 0;
 
   useEffect(() => {
-    if (!esperando) return;
-    const reloj = window.setInterval(() => setAhora(Date.now()), 1000);
-    return () => window.clearInterval(reloj);
-  }, [esperando]);
+    let vigente = true;
+    async function actualizar() {
+      const fecha = await proximoEnlaceCorreo(correo).catch(() => 0);
+      if (!vigente) return;
+      setVenceEn(fecha);
+      setAhora(Date.now());
+      setComprobando(false);
+    }
+    setComprobando(true);
+    actualizar();
+    const dejarObservar = observarEsperaCorreo(actualizar);
+    const reloj = window.setInterval(actualizar, 1000);
+    return () => {
+      vigente = false;
+      dejarObservar();
+      window.clearInterval(reloj);
+    };
+  }, [correo]);
 
   async function enviar() {
-    if (enCurso.current || deshabilitado || esperando || !esCorreoValido(correo.trim())) return;
+    if (enCurso.current || deshabilitado || comprobando || esperando || !esCorreoValido(correo.trim())) return;
     enCurso.current = true;
     setEnviando(true);
     setAviso(null);
@@ -47,7 +62,7 @@ export default function VerificacionCorreo({ correo, verificado, tipo, obtenerBo
     <div className="verificacion-correo">
       <div>
         <button type="button" className="btn" onClick={enviar}
-          disabled={deshabilitado || enviando || esperando || !esCorreoValido(correo.trim())}>
+          disabled={deshabilitado || enviando || comprobando || esperando || !esCorreoValido(correo.trim())}>
           {solicitado ? 'Reenviar enlace' : 'Confirmar mi correo'}
         </button>
       </div>
@@ -55,6 +70,9 @@ export default function VerificacionCorreo({ correo, verificado, tipo, obtenerBo
         {enviando ? 'Enviando enlace…' : aviso?.mensaje}
       </small>
       {esperando && !enviando && <small>Podrás solicitar otro enlace en {segundos} segundos.</small>}
+      {!esperando && !enviando && comprobando && <small>Comprobando cuándo puedes solicitar el enlace…</small>}
+      {!esperando && !enviando && !comprobando && !esCorreoValido(correo.trim()) && <small>Escribe un correo electrónico válido para activar la confirmación.</small>}
+      {!esperando && !enviando && !comprobando && deshabilitado && <small>Espera a que termine la solicitud actual.</small>}
     </div>
   );
 }
