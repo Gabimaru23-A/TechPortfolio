@@ -1,14 +1,16 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, useSyncExternalStore } from 'react';
 import { esCorreoValido } from '../../supabase/functions/_shared/validar-contacto.mjs';
-import { enviarEnlaceCorreo, proximoEnlaceCorreo } from '../utils/supabase.js';
+import { observarEsperaCorreo, proximoEnlaceCorreo } from '../utils/esperaCorreo.js';
+import { enviarEnlaceCorreo } from '../utils/supabase.js';
 
 export default function VerificacionCorreo({ correo, verificado, tipo, obtenerBorrador, deshabilitado }) {
   const [solicitado, setSolicitado] = useState(false);
   const [enviando, setEnviando] = useState(false);
   const [aviso, setAviso] = useState(null);
-  const [ahora, setAhora] = useState(Date.now);
+  const [, setAhora] = useState(Date.now);
   const enCurso = useRef(false);
-  const segundos = Math.max(0, Math.ceil((proximoEnlaceCorreo(correo) - ahora) / 1000));
+  const venceEn = useSyncExternalStore(observarEsperaCorreo, proximoEnlaceCorreo);
+  const segundos = Math.max(0, Math.ceil((venceEn - Date.now()) / 1000));
   const esperando = segundos > 0;
 
   useEffect(() => {
@@ -35,7 +37,11 @@ export default function VerificacionCorreo({ correo, verificado, tipo, obtenerBo
     }
   }
 
-  if (verificado) return <p className="success">Correo confirmado correctamente.</p>;
+  if (verificado) {
+    return <p className="success">
+      Correo confirmado correctamente.{tipo === 'solicitud' && ' Ya puedes enviar tu solicitud.'}
+    </p>;
+  }
 
   return (
     <div className="verificacion-correo">
@@ -48,7 +54,7 @@ export default function VerificacionCorreo({ correo, verificado, tipo, obtenerBo
       <small aria-live="polite" className={aviso?.error ? 'error' : undefined}>
         {enviando ? 'Enviando enlace…' : aviso?.mensaje}
       </small>
-      {esperando && !enviando && <small>Puedes pedir otro enlace en {segundos} s.</small>}
+      {esperando && !enviando && <small>Podrás solicitar otro enlace en {segundos} segundos.</small>}
     </div>
   );
 }

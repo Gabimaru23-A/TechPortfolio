@@ -13,7 +13,7 @@ const valores = {
   'Empresa (opcional)': '',
   'Descripción del proyecto': 'Consulta sobre el catálogo.\nSegunda línea.'
 };
-const confirmado = 'Correo confirmado correctamente.';
+const confirmado = 'Correo confirmado correctamente. Ya puedes enviar tu solicitud.';
 const enlaceInvalido = 'El enlace no es válido, venció o ya se utilizó. Solicita uno nuevo.';
 const solicitud = page => page.getByRole('form', { name: 'Describe tu proyecto' });
 const seguimiento = page => page.getByRole('form', { name: 'Consulta el estado de tu solicitud' });
@@ -32,6 +32,7 @@ async function simularSupabase(context, baseURL, responder = () => ({ json: { co
   const sesiones = new Map();
   const headers = {
     'access-control-allow-origin': baseURL,
+    'access-control-expose-headers': 'Retry-After',
     'access-control-allow-methods': 'POST, OPTIONS',
     'access-control-allow-headers': 'authorization, apikey, x-client-info, content-type, x-supabase-api-version'
   };
@@ -212,7 +213,8 @@ test('limita el reenvío y muestra errores de enlace vencido y utilizado', async
   const reenviar = formulario.getByRole('button', { name: 'Reenviar enlace' });
   await expect(reenviar).toBeDisabled();
   expect(auth).toHaveLength(1);
-  await page.clock.fastForward(61_000);
+  await expect(formulario.getByText(/Podrás solicitar otro enlace en 90 segundos/)).toBeVisible();
+  await page.clock.fastForward(91_000);
   await expect(reenviar).toBeEnabled();
   await reenviar.click();
   await expect.poll(() => auth.length).toBe(2);
@@ -225,6 +227,71 @@ test('limita el reenvío y muestra errores de enlace vencido y utilizado', async
   await page.goto(enlace);
   await expect(formulario.getByRole('alert')).toHaveText(enlaceInvalido);
   expect(registros).toHaveLength(0);
+});
+
+for (const formato of ['segundos', 'fecha', 'sin cabecera']) {
+  test(`recupera el temporizador tras HTTP 429 (${formato}) y permite reintentar`, async ({ page, context, baseURL }) => {
+    const inicio = new Date('2026-11-26T12:00:00Z');
+    const espera = formato === 'sin cabecera' ? 90 : 150;
+    const retryAfter = formato === 'fecha' ? new Date(+inicio + espera * 1000).toUTCString() : String(espera);
+    const { auth } = await simularSupabase(context, baseURL);
+    let intentos = 0;
+    await context.route(url => url.origin === origenSupabase && url.pathname === '/auth/v1/otp', async route => {
+      if (route.request().method() !== 'POST' || ++intentos > 1) return route.fallback();
+      const headers = { 'access-control-allow-origin': baseURL, 'access-control-expose-headers': 'Retry-After' };
+      if (formato !== 'sin cabecera') headers['Retry-After'] = retryAfter;
+      return route.fulfill({ status: 429, body: 'Too Many Requests', headers });
+    });
+    await page.clock.install({ time: inicio });
+    await page.clock.pauseAt(new Date(+inicio + 500));
+    await page.goto('/#/contacto');
+    const formulario = solicitud(page);
+    const entrada = formulario.getByLabel('Correo electrónico');
+    const boton = formulario.getByRole('button', { name: 'Confirmar mi correo' });
+    await entrada.fill(correo);
+    await boton.click();
+    await expect(formulario.getByText('Has solicitado varios enlaces de confirmación. Por seguridad, debes esperar antes de solicitar otro.')).toBeVisible();
+    await expect(formulario.getByText(`Podrás solicitar otro enlace en ${espera} segundos.`)).toBeVisible();
+    await expect(formulario.getByText('Te enviamos un enlace de confirmación.', { exact: false })).toHaveCount(0);
+    await page.reload();
+    await entrada.fill(correo);
+    await expect(boton).toBeDisabled();
+    await page.clock.fastForward((espera - 1) * 1000);
+    await expect(boton).toBeDisabled();
+    await page.clock.fastForward(2000);
+    await solicitarEnlace(formulario);
+    expect(intentos).toBe(2);
+    expect(auth).toHaveLength(1);
+  });
+}
+
+test('una cuenta existente solicita un solo enlace aunque pulse dos veces o cambie de pestaña', async ({ page, context, baseURL }) => {
+  const { auth, enlaceDe } = await simularSupabase(context, baseURL, undefined, new Map([
+    ['enlace-anterior-de-cuenta-existente', { correo, destino: baseURL + '/', usado: true }]
+  ]));
+  let continuar;
+  const pendiente = new Promise(resolve => { continuar = resolve; });
+  await context.route(url => url.origin === origenSupabase && url.pathname === '/auth/v1/otp', async route => {
+    if (route.request().method() === 'POST') await pendiente;
+    return route.fallback();
+  });
+  await page.goto('/#/contacto');
+  const formulario = solicitud(page);
+  await rellenar(formulario, valores);
+  const boton = formulario.getByRole('button', { name: 'Confirmar mi correo' });
+  await boton.evaluate(nodo => { nodo.click(); nodo.click(); });
+  try {
+    await expect(formulario.getByText('Enviando enlace…')).toBeVisible();
+    const otra = await context.newPage();
+    await otra.goto('/#/contacto');
+    await solicitud(otra).getByLabel('Correo electrónico').fill(correo);
+    await expect(solicitud(otra).getByRole('button', { name: 'Confirmar mi correo' })).toBeDisabled();
+  } finally {
+    continuar();
+  }
+  await expect(formulario.getByRole('button', { name: 'Reenviar enlace' })).toBeDisabled();
+  expect(auth).toHaveLength(1);
+  await abrirEnlace(page, enlaceDe(correo));
 });
 
 test('el enlace predeterminado completa PKCE al regresar a Contacto', async ({ page, context, baseURL }) => {
@@ -286,7 +353,7 @@ test('evita envíos simultáneos y conserva el mismo intento tras fallo de red y
   await enviar(formulario).click();
   await expect(formulario.getByRole('status')).toContainText('Confirma el correo de esta solicitud');
   await expect(nombre).toHaveValue(valores.Nombre);
-  await page.clock.fastForward(61_000);
+  await page.clock.fastForward(91_000);
   await solicitarEnlace(formulario);
   await abrirEnlace(page, enlaceDe(correo));
   await enviar(formulario).click();
@@ -300,6 +367,7 @@ test('el seguimiento recupera el UUID y diferencia al titular de otra cuenta', a
     datos.codigo === codigo && verificado === correo
       ? { json: { estado: 'en_revision', estado_actualizado_en: '2026-11-24T18:00:00Z' } }
       : { status: 404, json: { error: 'solicitud_no_encontrada' } });
+  await page.clock.install();
   await page.goto('/#/contacto');
   const formulario = seguimiento(page);
   const entrada = formulario.getByLabel('Código de seguimiento');
@@ -320,6 +388,7 @@ test('el seguimiento recupera el UUID y diferencia al titular de otra cuenta', a
   await expect(estado).toContainText('No encontramos una solicitud');
 
   await correoConsulta.fill(correo);
+  await page.clock.fastForward(91_000);
   await solicitarEnlace(formulario);
   await abrirEnlace(page, enlaceDe(correo));
   await expect(entrada).toHaveValue(codigo);

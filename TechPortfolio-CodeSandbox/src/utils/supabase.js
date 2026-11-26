@@ -3,6 +3,7 @@ import { normalizarCorreo, uuidV4 } from '../../supabase/functions/_shared/valid
 import { estados } from '../../supabase/functions/_shared/estados.mjs';
 import { guardarBorrador, leerBorrador } from './borradorContacto.js';
 import { configurarSupabase } from './supabase-config.js';
+import { guardarEsperaCorreo, intervaloCorreo, leerRetryAfter, proximoEnlaceCorreo } from './esperaCorreo.js';
 
 const { configuracion } = configurarSupabase({
   VITE_SUPABASE_URL: import.meta.env.VITE_SUPABASE_URL,
@@ -42,7 +43,25 @@ const almacenamientoAuth = {
   }
 };
 
+let solicitudEnCurso = false;
+let limiteDetectado = false;
 const cliente = configuracion ? createClient(configuracion.url, configuracion.clave, {
+  global: {
+    async fetch(url, opciones) {
+      const respuesta = await fetch(url, opciones);
+      if (opciones?.method === 'POST' && new URL(respuesta.url || url).pathname === '/auth/v1/otp') {
+        const ahora = Date.now();
+        const reintentar = leerRetryAfter(respuesta.headers.get('Retry-After'), ahora);
+        if (respuesta.status === 429) {
+          limiteDetectado = true;
+          guardarEsperaCorreo(reintentar || ahora + intervaloCorreo);
+        } else if (reintentar) {
+          guardarEsperaCorreo(reintentar);
+        }
+      }
+      return respuesta;
+    }
+  },
   auth: {
     flowType: 'pkce',
     persistSession: true,
@@ -52,8 +71,8 @@ const cliente = configuracion ? createClient(configuracion.url, configuracion.cl
   }
 }) : null;
 export const seguimientoDisponible = Boolean(cliente);
-const proximoEnvio = new Map();
 const enlaceInvalido = 'El enlace no es válido, venció o ya se utilizó. Solicita uno nuevo.';
+const avisoLimite = 'Has solicitado varios enlaces de confirmación. Por seguridad, debes esperar antes de solicitar otro.';
 
 export class CorreoNoVerificado extends Error {
   constructor() {
@@ -61,33 +80,39 @@ export class CorreoNoVerificado extends Error {
   }
 }
 
-export function proximoEnlaceCorreo(correo) {
-  return proximoEnvio.get(normalizarCorreo(correo)) ?? 0;
-}
+async function solicitarEnlace(email, tipo, borrador) {
+  if (proximoEnlaceCorreo() > Date.now()) throw new Error(avisoLimite);
 
-export async function enviarEnlaceCorreo(correo, tipo, borrador) {
-  const email = normalizarCorreo(correo);
-  const ahora = Date.now();
-  if (proximoEnlaceCorreo(email) > ahora) throw new Error('Espera antes de solicitar otro enlace.');
-
-  for (const [direccion, vence] of proximoEnvio) {
-    if (vence <= ahora) proximoEnvio.delete(direccion);
-  }
-  proximoEnvio.set(email, ahora + 60_000);
   await guardarBorrador(email, tipo, borrador).catch(() => {});
   const redirect = new URL(import.meta.env.BASE_URL, window.location.href);
   redirect.hash = '';
   redirect.search = '';
+  guardarEsperaCorreo(Date.now() + intervaloCorreo);
+  limiteDetectado = false;
   const respuesta = await cliente.auth.signInWithOtp({
     email, options: { shouldCreateUser: true, emailRedirectTo: redirect.href }
   }).catch(() => null);
   if (respuesta && !respuesta.error) return;
-  if (respuesta?.error?.status === 429) {
-    proximoEnvio.set(email, Date.now() + 60_000);
-    throw new Error('Supabase limitó el reenvío. Espera antes de solicitar otro enlace.');
-  }
-  proximoEnvio.delete(email);
+  if (limiteDetectado || respuesta?.error?.status === 429) throw new Error(avisoLimite);
   throw new Error('No pudimos enviar el enlace de confirmación. Intenta de nuevo más tarde.');
+}
+
+export async function enviarEnlaceCorreo(correo, tipo, borrador) {
+  const ocupado = 'Ya estamos solicitando un enlace. Espera unos segundos.';
+  if (solicitudEnCurso) throw new Error(ocupado);
+  solicitudEnCurso = true;
+  try {
+    const email = normalizarCorreo(correo);
+    if (navigator.locks) {
+      return await navigator.locks.request('techportfolio:enviar-enlace', { ifAvailable: true }, async bloqueo => {
+        if (!bloqueo) throw new Error(ocupado);
+        await solicitarEnlace(email, tipo, borrador);
+      });
+    }
+    await solicitarEnlace(email, tipo, borrador);
+  } finally {
+    solicitudEnCurso = false;
+  }
 }
 
 async function completarConfirmacion(hash, codigo) {
